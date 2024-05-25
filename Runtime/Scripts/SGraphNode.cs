@@ -10,7 +10,7 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         public bool RequirementsMet
         {
-            get { return SGStateMachine.MeetsRequirements(); }
+            get { return SGStateMachine.MeetsRequirements(default(List<T>)); }
         }
         public SGraphStateMachine<T> SGStateMachine { get; protected set; }
         public Dictionary<string, SGraphNode<T>> Connections { get; protected set; }

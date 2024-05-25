@@ -3,7 +3,8 @@
     "rootNamespace": "FuzzPhyte.SGraph.Samples",
     "references": [
         "GUID:0452c3a290873bf4db16d7c30a9a5432",
-        "GUID:b2274f1409ce26f40919f89f9d4f667c"
+        "GUID:b2274f1409ce26f40919f89f9d4f667c",
+        "GUID:2765e68924a08a94ea0ea66b31c0168f"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

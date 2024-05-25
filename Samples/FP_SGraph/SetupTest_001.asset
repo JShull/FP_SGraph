@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 18cdec02ee92b6f46b1cf5e5050cf51a, type: 3}
-  m_Name: SetupTest_002
+  m_Name: SetupTest_001
   m_EditorClassIdentifier: 
-  NodeIDName: SetupTest_002
+  NodeIDName: SetupTest_001
   StateTransitions:
   - Transition: 0
     OutcomeStatus: 1
@@ -25,7 +25,21 @@ MonoBehaviour:
     UnityActionEvents: []
   - Transition: 3
     OutcomeStatus: 2
-    UnityActionEvents: []
+    UnityActionEvents:
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 0}
+          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_MethodName: SetActive
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
   - Transition: 4
     OutcomeStatus: 3
     UnityActionEvents: []
@@ -35,7 +49,10 @@ MonoBehaviour:
   - Transition: 6
     OutcomeStatus: 1
     UnityActionEvents: []
-  Connections: []
-  Requirements: []
-  IsStartNode: 0
+  Connections:
+  - {fileID: 11400000, guid: bb6bb93e0f1b04eb6851aa2c082d1aae, type: 2}
+  - {fileID: 11400000, guid: 015fea063bc8b49cb9e01c73037d218b, type: 2}
+  Requirements:
+  - Introduction
+  IsStartNode: 1
   StartingState: 1

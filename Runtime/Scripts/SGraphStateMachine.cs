@@ -128,9 +128,9 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         /// <param name="transition"></param>
         /// <returns></returns>
-        public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition)
+        public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition, List<T> requirementValue)
         {
-            if (!MeetsRequirements())
+            if (!MeetsRequirements(requirementValue))
             {
                 return (false,CurrentState);
             }
@@ -186,6 +186,6 @@ namespace FuzzPhyte.SGraph
         /// Requirements Logic for the list of Requirements
         /// </summary>
         /// <returns></returns>
-        public abstract bool MeetsRequirements();
+        public abstract bool MeetsRequirements(List<T> parameter, bool useLockedState=true);
     }
 }

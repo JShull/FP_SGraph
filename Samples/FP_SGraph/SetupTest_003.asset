@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 18cdec02ee92b6f46b1cf5e5050cf51a, type: 3}
-  m_Name: SetupTest_001
+  m_Name: SetupTest_003
   m_EditorClassIdentifier: 
-  NodeIDName: SetupTest_001
+  NodeIDName: SetupTest_003
   StateTransitions:
   - Transition: 0
     OutcomeStatus: 1
@@ -35,8 +35,7 @@ MonoBehaviour:
   - Transition: 6
     OutcomeStatus: 1
     UnityActionEvents: []
-  Connections:
-  - {fileID: 11400000, guid: bb6bb93e0f1b04eb6851aa2c082d1aae, type: 2}
+  Connections: []
   Requirements: []
-  IsStartNode: 1
+  IsStartNode: 0
   StartingState: 1

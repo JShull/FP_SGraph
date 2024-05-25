@@ -29,28 +29,5 @@ namespace FuzzPhyte.SGraph
         /// Uses the template data to build a runtime node with scene/gameobject references
         /// </summary>
         public abstract SOSNodeData<T, A> BuildRuntimeNode();
-        /*
-        {
-
-           //copy data from my NodeDataTemplate to this runtimeNode
-           var tempData = Instantiate(NodeDataTemplate);
-
-           //go through my NodeDataTemplate - find the StateTransitions and match them with my EventsByType
-           //if they match, add the event to the NodeDataTemplate
-           for (int i = 0; i < NodeDataTemplate.StateTransitions.Count; i++)
-           {
-               for (int j = 0; j < EventsByType.Count; j++)
-               {
-                   if (NodeDataTemplate.StateTransitions[i].Equals(EventsByType[j]))
-                   {
-                       tempData.StateTransitions.Add(EventsByType[j]);
-                       Debug.Log($"Added Event {EventsByType[j]} to RunTime Model");
-                   }
-               }
-           }
-           return tempData;
-           
-          }
-        */
     }
 }

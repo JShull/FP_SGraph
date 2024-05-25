@@ -58,9 +58,17 @@ namespace FuzzPhyte.SGraph.Samples
                 }
                 EventsByType.Add(tempData);
             }
-
-
         }
+        #if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (NodeDataTemplate != null)
+            {
+                // Trigger editor update when NodeDataTemplate changes
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+        }
+        #endif
     }
 }
 

@@ -9,33 +9,44 @@ namespace FuzzPhyte.SGraph.Editor
     using System;
     using UnityEngine.SceneManagement;
     using FuzzPhyte.Utility;
+    using Unity.Serialization.Json;
     using System.Text;
 
     [CustomEditor(typeof(SGraphGONodeMono))]
     public class SGraphGONodeEditor : Editor
     {
+        private Color defaultEditorColor = new Color(1,0.5f,0,1);
+        private Color defaultHoverColor = Color.yellow;
+        private Color defaultBoxColorText = Color.white;
+        private Color defaultBoxColorTextHover = Color.blue;
+        private Color defaultBoxColorTextFocused = Color.cyan;
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            //visually setup the editor script
-            GUIStyle copyScriptableObjectDataButtonStyle = new GUIStyle(GUI.skin.button);
-            copyScriptableObjectDataButtonStyle.normal.textColor = Color.red; // Text color for the normal state
-            copyScriptableObjectDataButtonStyle.hover.textColor = Color.yellow; // Text color when hovered
-            GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
-            boxStyle.margin = new RectOffset(15, 5, 5, 5);
-            boxStyle.normal.textColor = Color.white;
-            boxStyle.hover.textColor = Color.blue;
-            boxStyle.border = new RectOffset(20, 7, 7, 7);
-            boxStyle.focused.textColor = Color.blue;
-
+            SGraphGONodeMono nodeMonoScript = (SGraphGONodeMono)target;
+            //Connection List
+            ShowConnectionsList(nodeMonoScript);
+            //Requirement List
+            // Show Requirements List
+            ShowRequirementsList(nodeMonoScript);
+            GUIStyle copyScriptableObjectDataButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                normal = { textColor = defaultEditorColor },
+                hover = { textColor = defaultHoverColor }
+            };
+            
+            GUIStyle boxStyle = new GUIStyle(GUI.skin.box){
+                margin = new RectOffset(15, 5, 5, 5),
+                normal = {textColor = defaultBoxColorText},
+                hover = {textColor = defaultBoxColorTextHover},
+                border = new RectOffset(20, 7, 7, 7),
+                focused = {textColor = defaultBoxColorTextFocused},
+            };
+            
             EditorGUILayout.Space(20);
-            FP_Utility_Editor.DrawUILine(Color.red, 5, 5);
+            FP_Utility_Editor.DrawUILine(defaultEditorColor, 5, 5);
             EditorGUILayout.Space(10);
             EditorGUILayout.BeginVertical(boxStyle);
-
-
-            //
-            SGraphGONodeMono nodeMonoScript = (SGraphGONodeMono)target;
 
             // Add a button to the inspector of SGraphGONodeMono objects
             if (GUILayout.Button("Generate Events From Data",copyScriptableObjectDataButtonStyle))
@@ -43,9 +54,9 @@ namespace FuzzPhyte.SGraph.Editor
                 GenerateEventsByType(nodeMonoScript);
             }
             EditorGUILayout.Space(10);
-            FP_Utility_Editor.DrawUILine(Color.red, 5, 5);
+            FP_Utility_Editor.DrawUILine(defaultEditorColor, 5, 5);
             EditorGUILayout.Space(20);
-            if (GUILayout.Button("Build Copied Data"))
+            if (GUILayout.Button("Build Copied Data", copyScriptableObjectDataButtonStyle))
             {
                 var returnData = WriteRuntimeDataObjectWithUnityEvents(nodeMonoScript);
                 if (returnData.Item1)
@@ -55,9 +66,9 @@ namespace FuzzPhyte.SGraph.Editor
                 
             }
             EditorGUILayout.Space(10);
-            if(GUILayout.Button("Restore Data From JSON"))
+            if(GUILayout.Button("Restore Data From JSON", copyScriptableObjectDataButtonStyle))
             {
-                var dataInfo = ReadJSONFromLocalSelectedFileMenu(nodeMonoScript.JSONData,nodeMonoScript);
+                var dataInfo = ReadJSONFromLocalSelectedFileMenuUnity(nodeMonoScript.JSONData,nodeMonoScript);
                 if (dataInfo.Item1)
                 {
                     Debug.Log($"Try restoring the data now to our EventList");
@@ -65,28 +76,89 @@ namespace FuzzPhyte.SGraph.Editor
                 }
             }
             EditorGUILayout.EndVertical();
+            if (GUI.changed)
+            {
+                EditorUtility.SetDirty(nodeMonoScript);
+            }
         }
+        private void ShowConnectionsList(SGraphGONodeMono nodeMonoScript)
+        {
+            EditorGUILayout.LabelField("Connections", EditorStyles.boldLabel);
 
+            if (nodeMonoScript.RuntimeNode != null && nodeMonoScript.RuntimeNode.Connections != null)
+            {
+                for (int i = 0; i < nodeMonoScript.RuntimeNode.Connections.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    nodeMonoScript.RuntimeNode.Connections[i] = (SOSNodeData<SGraphTransitionData, string>)EditorGUILayout.ObjectField(
+                        $"Connection {i + 1}",
+                        nodeMonoScript.RuntimeNode.Connections[i],
+                        typeof(SOSNodeData<SGraphTransitionData, string>),
+                        false
+                    );
+
+                    if (GUILayout.Button("Remove"))
+                    {
+                        nodeMonoScript.RuntimeNode.Connections.RemoveAt(i);
+                        i--; // Adjust index after removal
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+
+            if (GUILayout.Button("Add Connection"))
+            {
+                nodeMonoScript.RuntimeNode.Connections.Add(null);
+            }
+        }
+        private void ShowRequirementsList(SGraphGONodeMono nodeMonoScript)
+        {
+            EditorGUILayout.LabelField("Requirements", EditorStyles.boldLabel);
+
+            if (nodeMonoScript.RuntimeNode != null && nodeMonoScript.RuntimeNode.Requirements != null)
+            {
+                for (int i = 0; i < nodeMonoScript.RuntimeNode.Requirements.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    nodeMonoScript.RuntimeNode.Requirements[i] = (string)EditorGUILayout.TextField(
+                        $"Requirement {i + 1}",
+                        nodeMonoScript.RuntimeNode.Requirements[i]
+                    );
+
+                    if (GUILayout.Button("Remove"))
+                    {
+                        nodeMonoScript.RuntimeNode.Requirements.RemoveAt(i);
+                        i--; // Adjust index after removal
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+
+            if (GUILayout.Button("Add Requirement"))
+            {
+                nodeMonoScript.RuntimeNode.Requirements.Add(string.Empty);
+            }
+        }     
         private void GenerateEventsByType(SGraphGONodeMono nodeMonoScript)
         {
+            nodeMonoScript.RuntimeNode = nodeMonoScript.BuildRuntimeNode();
+            EditorUtility.SetDirty(nodeMonoScript);
             if (nodeMonoScript.NodeDataTemplate != null)
             {
                 nodeMonoScript.EventsByType.Clear(); // Clear current list to repopulate
-
                 // Assuming StateTransitions is a List<T> in your SOSNodeData<T, A>
                 foreach (var transition in nodeMonoScript.NodeDataTemplate.StateTransitions)
                 {
                     nodeMonoScript.EventsByType.Add(transition);
                 }
-
                 // Mark the object as having been modified, so Unity knows to save the changes
                 EditorUtility.SetDirty(nodeMonoScript);
-
                 // Optionally, you could also call nodeMonoScript.BuildRuntimeNode() here if you want
                 // to automatically rebuild the runtime node whenever the list is generated.
             }
         }
-        
         private (bool,string) WriteRuntimeDataObjectWithUnityEvents(SGraphGONodeMono nodeMonoScript)
         {
             //generate sample data folder
@@ -150,7 +222,9 @@ namespace FuzzPhyte.SGraph.Editor
                 //save this scriptableobject to a file and update asset database
                 EditorUtility.SetDirty(nodeMonoScript);
             }
-            var TheRecorderSettingsJSON = JsonUtility.ToJson(nodeMonoScript.RuntimeNode);
+            
+            //var TheRecorderSettingsJSON = JsonUtility.ToJson(nodeMonoScript.RuntimeNode);
+            var TheRecorderSettingsJSON = JsonSerialization.ToJson(nodeMonoScript.RuntimeNode);
             var jsonAsset = TheRecorderSettingsJSON;
             //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
             //string currentSceneName = SceneManager.GetActiveScene().name;
@@ -175,7 +249,7 @@ namespace FuzzPhyte.SGraph.Editor
                     } // StreamWriter is automatically flushed and closed here
                 } // FileStream is automatically closed here
 
-                Debug.Log($"Backup file generated at {assetPath} lets try generating and saving a 'Unity Recorder List'");
+                Debug.Log($"Backup file generated at {assetPath} lets try generating and saving the file'");
 
                 //
             }
@@ -185,7 +259,38 @@ namespace FuzzPhyte.SGraph.Editor
                 Debug.LogError("An error occurred while writing the backup file: " + ex.Message);
             }
         }
-
+        private (bool, string) ReadJSONFromLocalSelectedFileMenuUnity(TextAsset data, SGraphGONodeMono nodeMonoScript)
+        {
+            if (data != null)
+            {
+                var assetPath = AssetDatabase.GetAssetPath(data.GetInstanceID());
+                try
+                {
+                    string content;
+                    using (var fileStream = new FileStream(assetPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        using (var reader = new StreamReader(fileStream, Encoding.UTF8))
+                        {
+                            content = reader.ReadToEnd();
+                        }
+                    }
+                    //SGraphGONode<SGraphTransitionData, string>
+                    var returnData = JsonSerialization.FromJson<SOSNodeData<SGraphTransitionData,string>>(content);
+                    nodeMonoScript.RuntimeNode = returnData;
+                    return (true, assetPath);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"An error occurred while attempting to read the backup file at {assetPath}: {ex.Message}");
+                    return (false, ex.Message);
+                }
+            }
+            else
+            {
+                Debug.LogError("Make sure you have a TextAsset selected when loading from the backup!");
+                return (false, "NULL");
+            }
+        }
         private (bool,string) ReadJSONFromLocalSelectedFileMenu(TextAsset data, SGraphGONodeMono nodeMonoScript)
         {
             if (data != null)
@@ -208,7 +313,9 @@ namespace FuzzPhyte.SGraph.Editor
                     //TheRecorderSettingsJSON = content;
                     //var anyErrors = ReadEditorPrefsJSON();
                     //setup our tags to match if we need more
+                    //SOSGraphNodeData
                     var returnData = JsonUtility.FromJson<SOSNodeData<SGraphTransitionData,string>>(content);
+                    //var returnData = JsonUtility.FromJson<SOSGraphNodeData>(content);
                     //we maybe got some data
                     nodeMonoScript.RuntimeNode = returnData;
                     return (true, assetPath);
