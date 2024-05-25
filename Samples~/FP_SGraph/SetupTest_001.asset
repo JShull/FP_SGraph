@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18cdec02ee92b6f46b1cf5e5050cf51a, type: 3}
+  m_Name: SetupTest_001
+  m_EditorClassIdentifier: 
+  NodeIDName: SetupTest_001
+  StateTransitions:
+  - Transition: 0
+    OutcomeStatus: 1
+    UnityActionEvents: []
+  - Transition: 1
+    OutcomeStatus: 2
+    UnityActionEvents: []
+  - Transition: 2
+    OutcomeStatus: 1
+    UnityActionEvents: []
+  - Transition: 3
+    OutcomeStatus: 2
+    UnityActionEvents: []
+  - Transition: 4
+    OutcomeStatus: 3
+    UnityActionEvents: []
+  - Transition: 5
+    OutcomeStatus: 4
+    UnityActionEvents: []
+  - Transition: 6
+    OutcomeStatus: 1
+    UnityActionEvents: []
+  Connections:
+  - {fileID: 11400000, guid: bb6bb93e0f1b04eb6851aa2c082d1aae, type: 2}
+  Requirements: []
+  IsStartNode: 1
+  StartingState: 1

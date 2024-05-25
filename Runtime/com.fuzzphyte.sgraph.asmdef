@@ -1,0 +1,17 @@
+{
+    "name": "com.fuzzphyte.sgraph",
+    "rootNamespace": "FuzzPhyte.SGraph",
+    "references": [
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:b2274f1409ce26f40919f89f9d4f667c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

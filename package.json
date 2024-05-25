@@ -1,0 +1,38 @@
+{
+    "name": "com.fuzzphyte.sgraph",
+    "version": "0.1.0",
+    "displayName": "FP SGraph",
+    "description": "FP SGraph is a node-link system with events driven by data from scriptable objects. A Graph is just a linked list of nodes and edges, this also has a web which manages all graphs by web",
+    "unity": "2022.3",
+    "unityRelease": "28f1",
+    "documentationUrl": "https://github.com/jshull/FP_SGraph/README.md",
+    "changelogUrl": "https://github.com/jshull/FP_SGraph/CHANGELOG.md",
+    "licensesUrl": "https://github.com/jshull/FP_SGraph/LICENSE.md",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/jshull/FP_SGraph.git"
+    },
+    "dependencies": {
+      "com.fuzzphyte.utility": "https://github.com/JShull/FP_Utility.git",
+      "com.unity.mathematics": "1.2.6"
+    },
+    "samples": [
+      {
+        "displayName": "FP SGraph Samples",
+        "description": "Please import this to understand how to use this package!",
+        "path": "Samples~/FP_SGraph"
+      }],
+    "keywords": [
+      "ScriptableObject",
+      "FuzzPhyte",
+      "Node",
+      "Graph",
+      "Web"
+    ],
+    "author": {
+      "name": "John Shull",
+      "email": "the.john.shull@gmail.com",
+      "url": "https://github.com/jshull"
+    },
+    "type": "tool"
+  }
