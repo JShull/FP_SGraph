@@ -5,9 +5,9 @@ namespace FuzzPhyte.SGraph.Samples
     using FuzzPhyte.Utility;
     using System;
     // Main Mono Class for the Sample 
-    public class SGraphWebManager : SGraphWebMonoBase<SGraphTransitionData, SGraphRequirementData, SOSGraphNodeDataEx>
+    public class SGraphWebManager : WebManagerMB<TransitionD, RequirementD, SOSGraphNodeDataEx>
     {
-        private SGraphWebSharpEx graphWeb;
+        //private SGraphWebSharpEx graphWeb;
         public SGraphGONodeMono MonoNode;
         public SGNode EntryDataNode;
         
@@ -23,7 +23,7 @@ namespace FuzzPhyte.SGraph.Samples
             }
             if(EntryDataNode != null)
             {
-                graphWeb = new SGraphWebSharpEx(EntryDataNode);
+                TheWeb = new SGraphWebSharpEx(EntryDataNode);
             }
         }
         private void OnEnable()

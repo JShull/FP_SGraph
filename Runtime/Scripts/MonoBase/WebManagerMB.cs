@@ -9,10 +9,11 @@ namespace FuzzPhyte.SGraph
     //M is the data class usually made up of <T,R>
     //T is our transition data which has to be a struct
     //R is the requirement data which can be whatever you need it to be
-    public abstract class SGraphWebMonoBase<T,R,M> : MonoBehaviour where T : struct where R: struct
+    public abstract class WebManagerMB<T,R,M> : MonoBehaviour where T : struct where R: struct
     {
         public List<M> DataNodes;
 
+        public WebSB<T,R> TheWeb;
         /// <summary>
         // dictionary of the in scene unity nodes with their data class as the key
         /// </summary>

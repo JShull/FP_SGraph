@@ -588,9 +588,7 @@ MonoBehaviour:
     UnityActionEvents: []
   - Transition: 3
     OutcomeStatus: 2
-    UnityActionEvents:
-    - m_PersistentCalls:
-        m_Calls: []
+    UnityActionEvents: []
   - Transition: 4
     OutcomeStatus: 3
     UnityActionEvents: []
@@ -747,5 +745,5 @@ SceneRoots:
   - {fileID: 513712251}
   - {fileID: 1659993766}
   - {fileID: 874219777}
-  - {fileID: 745337173}
   - {fileID: 1437442648}
+  - {fileID: 745337173}

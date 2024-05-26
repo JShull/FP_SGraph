@@ -61,7 +61,7 @@ namespace FuzzPhyte.SGraph.Editor
             focused = {textColor = DefaultBoxColorTextFocused},
         };
 
-        public static string WriteSOSNodeData(SOSNodeDataBase<T, R> passedData,string fullLocalPath,string assetName)
+        public static string WriteSOSNodeData(NodeSOB<T, R> passedData,string fullLocalPath,string assetName)
         {
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(fullLocalPath + "/" + assetName);
             return FP_Utility_Editor.CreateAssetAt(passedData, assetPath);

@@ -12,11 +12,11 @@ namespace FuzzPhyte.SGraph
     /// <typeparam name="R">the requirement type</typeparam>
     [Serializable]
     
-    public abstract class SOSNodeDataBase<T,R> : ScriptableObject where T : struct where R : struct
+    public abstract class NodeSOB<T,R> : ScriptableObject where T : struct where R : struct
     {
         public string NodeIDName;
         public List<T> StateTransitions;
-        public List<SOSNodeDataBase<T,R>> Connections;
+        public List<NodeSOB<T,R>> Connections;
         public List<R> Requirements;
     }
 }

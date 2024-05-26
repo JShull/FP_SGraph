@@ -2,7 +2,7 @@ namespace FuzzPhyte.SGraph
 {
     using System.Collections.Generic;
     // main abstract class for the C# side of the nodes 
-    public abstract class SGraphNodeSharpBase<T,R> where T : struct where R : struct
+    public abstract class NodeSB<T,R> where T : struct where R : struct
     {
         public string SGNodeID { get; protected set; }
         public bool IsHeadNode { get; protected set; }
@@ -13,15 +13,15 @@ namespace FuzzPhyte.SGraph
         {
             get { return SGStateMachine.MeetsRequirements(default(List<R>)); }
         }
-        public SGraphStateMachineSharpBase<R> SGStateMachine { get; protected set; }
-        public Dictionary<string, SGraphNodeSharpBase<T,R>> Connections { get; protected set; }
-        public SGraphNodeSharpBase(string id, SGraphStateMachineSharpBase<R> stateMachine)
+        public StateMachineSB<R> SGStateMachine { get; protected set; }
+        public Dictionary<string, NodeSB<T,R>> Connections { get; protected set; }
+        public NodeSB(string id, StateMachineSB<R> stateMachine)
         {
             SGNodeID = id;
             SGStateMachine = stateMachine;
-            Connections = new Dictionary<string, SGraphNodeSharpBase<T,R>>();
+            Connections = new Dictionary<string, NodeSB<T,R>>();
         }
-        public SGraphNodeSharpBase(string id)
+        public NodeSB(string id)
         {
             SGNodeID = id;
         }

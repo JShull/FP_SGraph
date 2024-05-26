@@ -6,11 +6,11 @@ namespace FuzzPhyte.SGraph.Samples
     /// <summary>
     /// A Sample Gameobject Node
     /// </summary>
-    public class SGraphGONodeMono : SGraphGONodeMonoBase<SGraphTransitionData,SGraphRequirementData>
+    public class SGraphGONodeMono : UNodeMB<TransitionD,RequirementD>
     {
         [Header("Backup Data")]
         public TextAsset JSONData;
-        public override SOSNodeDataBase<SGraphTransitionData, SGraphRequirementData> BuildRuntimeNode()
+        public override NodeSOB<TransitionD, RequirementD> BuildRuntimeNode()
         {
             //return base.BuildRuntimeNode();
             //copy data from my NodeDataTemplate to this runtimeNode
@@ -52,7 +52,7 @@ namespace FuzzPhyte.SGraph.Samples
                 var curStateTransition = RuntimeNode.StateTransitions[i];
                 EventsByType.Clear();
                 // now copy each RunTimeNode StateTransition back into the EventsByType list
-                SGraphTransitionData tempData = new SGraphTransitionData();
+                TransitionD tempData = new TransitionD();
                 tempData.Transition = curStateTransition.Transition;
                 tempData.OutcomeStatus = curStateTransition.OutcomeStatus;
                 for (int j = 0; j < curStateTransition.UnityActionEvents.Count; j++)

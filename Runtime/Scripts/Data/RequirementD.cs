@@ -3,7 +3,7 @@ namespace FuzzPhyte.SGraph
     using System;
     using FuzzPhyte.Utility.Meta;
     [Serializable]
-    public struct SGraphRequirementData
+    public struct RequirementD
     {
         public FP_Tag RequirementTag;
         public string RequirementName;

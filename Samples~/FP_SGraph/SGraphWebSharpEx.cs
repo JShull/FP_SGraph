@@ -1,9 +1,9 @@
 namespace FuzzPhyte.SGraph.Samples
 {
     //Main Web Graph Data Class for the Sample
-    public class SGraphWebSharpEx : SGraphWebSharpBase<SGraphTransitionData,SGraphRequirementData>
+    public class SGraphWebSharpEx : WebSB<TransitionD,RequirementD>
     {
-        public SGraphWebSharpEx(SGraphNodeSharpBase<SGraphTransitionData,SGraphRequirementData> entryDataNode) : base(entryDataNode)
+        public SGraphWebSharpEx(NodeSB<TransitionD,RequirementD> entryDataNode) : base(entryDataNode)
         {
         }
     }

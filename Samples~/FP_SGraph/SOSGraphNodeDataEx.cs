@@ -8,7 +8,7 @@ namespace FuzzPhyte.SGraph.Samples
 
     [Serializable]
     [CreateAssetMenu(fileName = "SGraphData", menuName = "FuzzPhyte/SGraph/SGraphData", order = 0)]
-    public class SOSGraphNodeDataEx : SOSNodeDataBase<SGraphTransitionData,SGraphRequirementData>
+    public class SOSGraphNodeDataEx : NodeSOB<TransitionD,RequirementD>
     {
         public bool IsStartNode;
         public SequenceStatus StartingState;

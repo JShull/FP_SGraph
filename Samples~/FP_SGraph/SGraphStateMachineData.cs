@@ -6,22 +6,22 @@ using System.Diagnostics;
 namespace FuzzPhyte.SGraph.Samples
 {
     //Example of a state machine that uses string as the requirement type
-    public class SGraphStateMachineData : SGraphStateMachineSharpBase<SGraphRequirementData>
+    public class SGraphStateMachineData : StateMachineSB<RequirementD>
     {
         #region Constructors
         public SGraphStateMachineData(SequenceStatus startingState) : base(startingState)
         {
         }
 
-        public SGraphStateMachineData(SequenceStatus startingState, List<SGraphRequirementData> requirements) : base(startingState, requirements)
+        public SGraphStateMachineData(SequenceStatus startingState, List<RequirementD> requirements) : base(startingState, requirements)
         {
         }
 
-        public SGraphStateMachineData(SequenceStatus startingState, List<SGraphRequirementData> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions) : base(startingState, requirements, transitions)
+        public SGraphStateMachineData(SequenceStatus startingState, List<RequirementD> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions) : base(startingState, requirements, transitions)
         {
         }
 
-        public SGraphStateMachineData(SequenceStatus startingState, List<SGraphRequirementData> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<int, List<Action>> actions) : base(startingState, requirements, transitions, actions)
+        public SGraphStateMachineData(SequenceStatus startingState, List<RequirementD> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<int, List<Action>> actions) : base(startingState, requirements, transitions, actions)
         {
         }
         #endregion
@@ -32,7 +32,7 @@ namespace FuzzPhyte.SGraph.Samples
         /// <param name="passedRequirements">ones to remove from unlockRequirements</param>
         /// <param name="useLockedState">are we using the state machine as a force/limit which if we pass true we want to make sure we aren't in a locked state</param>
         /// <returns></returns>
-        public override bool MeetsRequirements(List<SGraphRequirementData> passedRequirements,bool useLockedState)
+        public override bool MeetsRequirements(List<RequirementD> passedRequirements,bool useLockedState)
         {
             if(useLockedState&&CurrentState == SequenceStatus.Locked)
             {
@@ -43,7 +43,7 @@ namespace FuzzPhyte.SGraph.Samples
             {
                 return true;
             }
-            List<SGraphRequirementData> requirementsToRemove = new List<SGraphRequirementData>();
+            List<RequirementD> requirementsToRemove = new List<RequirementD>();
             for (int i = 0; i < unlockRequirements.Count; i++)
             {
                 //current unlock requirement

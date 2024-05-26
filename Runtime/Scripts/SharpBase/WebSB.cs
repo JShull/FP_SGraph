@@ -9,19 +9,19 @@ namespace FuzzPhyte.SGraph
     /// </summary>
     // <typeparam name="T">struct that is the data for the transitions</typeparam>
     // <typeparam name="R">the type requirement</typeparam>
-    public abstract class SGraphWebSharpBase<T,R> where T : struct where R : struct
+    public abstract class WebSB<T,R> where T : struct where R : struct
     {
         #region Constructors
-        protected SGraphWebSharpBase()
+        protected WebSB()
         {
-            allNodes = new List<SGraphNodeSharpBase<T,R>>();
-            nextNodes = new List<SGraphNodeSharpBase<T,R>>();
+            allNodes = new List<NodeSB<T,R>>();
+            nextNodes = new List<NodeSB<T,R>>();
             currentNode = null;
         }
-        protected SGraphWebSharpBase(SGraphNodeSharpBase<T,R> head)
+        protected WebSB(NodeSB<T,R> head)
         {
-            allNodes = new List<SGraphNodeSharpBase<T,R>>();
-            nextNodes = new List<SGraphNodeSharpBase<T,R>>();
+            allNodes = new List<NodeSB<T,R>>();
+            nextNodes = new List<NodeSB<T,R>>();
             AddNode(head);
             headNode = head;
             currentNode = head;
@@ -30,33 +30,33 @@ namespace FuzzPhyte.SGraph
         /// <summary>
         /// List of all allNodes
         /// </summary>
-        protected List<SGraphNodeSharpBase<T,R>> allNodes;
+        protected List<NodeSB<T,R>> allNodes;
         /// <summary>
         /// initial root node for this graph
         /// </summary>
-        protected SGraphNodeSharpBase<T,R> headNode;
-        public SGraphNodeSharpBase<T,R> HeadNode
+        protected NodeSB<T,R> headNode;
+        public NodeSB<T,R> HeadNode
         {
             get { return headNode; }
         }
         /// <summary>
         /// list of allNodes that are next in line to be processed
         /// </summary>
-        protected List<SGraphNodeSharpBase<T,R>> nextNodes;
+        protected List<NodeSB<T,R>> nextNodes;
         /// <summary>
         /// current node we are actively on
         /// </summary>
-        protected SGraphNodeSharpBase<T,R> currentNode;
-        public SGraphNodeSharpBase<T,R> CurrentNode
+        protected NodeSB<T,R> currentNode;
+        public NodeSB<T,R> CurrentNode
         {
             get { return currentNode; }
         }
-        public SGraphStateMachineSharpBase<R> CurrentEvent
+        public StateMachineSB<R> CurrentEvent
         {
             get { return currentNode.SGStateMachine;}
         }
 
-        public void AddNode(SGraphNodeSharpBase<T,R> node)
+        public void AddNode(NodeSB<T,R> node)
         {
             if (!allNodes.Contains(node))
             {
@@ -64,7 +64,7 @@ namespace FuzzPhyte.SGraph
                 node.SGStateMachine.OnFinish += OnNodeFinished;
             }
         }
-        protected void RemoveNode(SGraphNodeSharpBase<T,R> node)
+        protected void RemoveNode(NodeSB<T,R> node)
         {
             if (allNodes.Contains(node))
             {
@@ -79,7 +79,7 @@ namespace FuzzPhyte.SGraph
         /// <param name="nodeA">head node</param>
         /// <param name="nodeB">tail node</param>
         /// <returns></returns>
-        public virtual bool ConnectNodes(SGraphNodeSharpBase<T,R> nodeA, SGraphNodeSharpBase<T,R> nodeB)
+        public virtual bool ConnectNodes(NodeSB<T,R> nodeA, NodeSB<T,R> nodeB)
         {
             ///if both of our nodes are in our current list
             if (allNodes.Contains(nodeA) && allNodes.Contains(nodeB))
@@ -104,8 +104,8 @@ namespace FuzzPhyte.SGraph
         /// <returns></returns>
         public virtual bool ConnectNodes(string nodeA, string nodeB)
         {
-            SGraphNodeSharpBase<T,R> a = allNodes.Find(x => x.SGNodeID == nodeA);
-            SGraphNodeSharpBase<T,R> b = allNodes.Find(x => x.SGNodeID == nodeB);
+            NodeSB<T,R> a = allNodes.Find(x => x.SGNodeID == nodeA);
+            NodeSB<T,R> b = allNodes.Find(x => x.SGNodeID == nodeB);
             if (a != null && b != null)
             {
                 //if we already have a connection we can't connect again
@@ -123,17 +123,17 @@ namespace FuzzPhyte.SGraph
         /// We need to update the nextNodes list when a node finishes
         /// </summary>
         /// <param name="nodeEvent"></param>
-        protected virtual void OnNodeFinished(SGraphStateMachineSharpBase<R> nodeEvent)
+        protected virtual void OnNodeFinished(StateMachineSB<R> nodeEvent)
         {
             //Get the node that finished
-            SGraphNodeSharpBase<T,R> finishedNode = GetNodeByEvent(nodeEvent);
+            NodeSB<T,R> finishedNode = GetNodeByEvent(nodeEvent);
             //get the connections
-            Dictionary<string, SGraphNodeSharpBase<T,R>> connections = finishedNode.Connections;
+            Dictionary<string, NodeSB<T,R>> connections = finishedNode.Connections;
             //if we have connections we need to now add them to the next allNodes but also clean up those next allNodes
             if (connections.Count > 0)
             {
                 nextNodes.Clear();
-                foreach (KeyValuePair<string, SGraphNodeSharpBase<T,R>> connection in connections)
+                foreach (KeyValuePair<string, NodeSB<T,R>> connection in connections)
                 {
                     nextNodes.Add(connection.Value);
                 }
@@ -167,10 +167,10 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         /// <param name="nodeID">nodeID as string</param>
         /// <returns></returns>
-        protected (bool,SGraphNodeSharpBase<T,R>) GoToNode(string nodeID)
+        protected (bool,NodeSB<T,R>) GoToNode(string nodeID)
         {
             //is our node in the nextNodes list
-            SGraphNodeSharpBase<T,R> node = nextNodes.Find(x => x.SGNodeID == nodeID);
+            NodeSB<T,R> node = nextNodes.Find(x => x.SGNodeID == nodeID);
             if (node != null)
             {
                 currentNode = node;
@@ -183,7 +183,7 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         /// <param name="node">nodeID as SGraphNode</param>
         /// <returns></returns>
-        protected (bool, SGraphNodeSharpBase<T,R>) GoToNode(SGraphNodeSharpBase<T,R> node)
+        protected (bool, NodeSB<T,R>) GoToNode(NodeSB<T,R> node)
         {
             //is our node in the nextNodes list
             return GoToNode(node.SGNodeID);
@@ -193,7 +193,7 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         /// <param name="sEvent"></param>
         /// <returns></returns>
-        protected SGraphNodeSharpBase<T,R> GetNodeByEvent(SGraphStateMachineSharpBase<R> sEvent)
+        protected NodeSB<T,R> GetNodeByEvent(StateMachineSB<R> sEvent)
         {
             return allNodes.Find(x => x.SGStateMachine == sEvent);
         }

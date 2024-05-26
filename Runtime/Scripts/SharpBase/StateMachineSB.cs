@@ -8,21 +8,21 @@ namespace FuzzPhyte.SGraph
     /// Abstract class for an 'Event' in the SGraph
     /// </summary>
     /// <typeparam name="R">requirement</typeparam>
-    public abstract class SGraphStateMachineSharpBase<R> where R : struct
+    public abstract class StateMachineSB<R> where R : struct
     {
         public SequenceStatus CurrentState { get; protected set; }
         protected List<R> unlockRequirements;
         protected Dictionary<SequenceTransition, SequenceStatus> stateTransitions;
         protected Dictionary<int,List<Action>> stateActions;
         //protected Dictionary<SequenceStatus, List<Action>> stateActions;
-        public delegate void StateEventHandler(SGraphStateMachineSharpBase<R>sEvent);
+        public delegate void StateEventHandler(StateMachineSB<R>sEvent);
         public event StateEventHandler OnFinish;
         public event StateEventHandler OnUnlocked;
         public event StateEventHandler OnLocked;
         public event StateEventHandler OnActive;
 
         #region Constructors
-        public SGraphStateMachineSharpBase(List<R>requirements)
+        public StateMachineSB(List<R>requirements)
         {
             CurrentState = SequenceStatus.Locked;
             unlockRequirements = requirements;
@@ -30,28 +30,28 @@ namespace FuzzPhyte.SGraph
             stateActions = new Dictionary<int, List<Action>>();
         }
        
-        protected SGraphStateMachineSharpBase(SequenceStatus startingState)
+        protected StateMachineSB(SequenceStatus startingState)
         {
             CurrentState = startingState;
             unlockRequirements = new List<R>();
             stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
             stateActions = new Dictionary<int, List<Action>>();
         }
-        protected SGraphStateMachineSharpBase(SequenceStatus startingState, List<R> requirements)
+        protected StateMachineSB(SequenceStatus startingState, List<R> requirements)
         {
             CurrentState = startingState;
             unlockRequirements = requirements;
             stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
             stateActions = new Dictionary<int, List<Action>>();
         }
-        protected SGraphStateMachineSharpBase(SequenceStatus startingState, List<R> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions)
+        protected StateMachineSB(SequenceStatus startingState, List<R> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions)
         {
             CurrentState = startingState;
             unlockRequirements = requirements;
             stateTransitions = transitions;
             stateActions = new Dictionary<int, List<Action>>();
         }
-        protected SGraphStateMachineSharpBase(SequenceStatus startingState, List<R> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<int, List<Action>> actions)
+        protected StateMachineSB(SequenceStatus startingState, List<R> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<int, List<Action>> actions)
         {
             CurrentState = startingState;
             unlockRequirements = requirements;

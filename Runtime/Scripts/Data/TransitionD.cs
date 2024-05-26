@@ -8,7 +8,7 @@ namespace FuzzPhyte.SGraph
     using FuzzPhyte.Utility.Meta;
     
     [Serializable]
-    public struct SGraphTransitionData 
+    public struct TransitionD 
     {
         public SequenceTransition Transition;
         public SequenceStatus OutcomeStatus;

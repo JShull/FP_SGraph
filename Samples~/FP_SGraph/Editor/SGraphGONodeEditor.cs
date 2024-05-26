@@ -11,7 +11,7 @@ namespace FuzzPhyte.SGraph.Editor
     using FuzzPhyte.Utility.Meta;
     using Unity.Serialization.Json;
     using System.Text;
-    using SGUtility = FP_SGraphUtility<SGraphTransitionData, SGraphRequirementData>;
+    using SGUtility = FP_SGraphUtility<TransitionD, RequirementD>;
     [CustomEditor(typeof(SGraphGONodeMono))]
     public class SGraphGONodeEditor : Editor
     {
@@ -119,9 +119,9 @@ namespace FuzzPhyte.SGraph.Editor
 
                     EditorGUILayout.BeginVertical();
                     EditorGUILayout.LabelField($"Connection {i + 1}", reqStyleTag);
-                    nodeMonoScript.RuntimeNode.Connections[i] = (SOSNodeDataBase<SGraphTransitionData, SGraphRequirementData>)EditorGUILayout.ObjectField(
+                    nodeMonoScript.RuntimeNode.Connections[i] = (NodeSOB<TransitionD, RequirementD>)EditorGUILayout.ObjectField(
                         nodeMonoScript.RuntimeNode.Connections[i],
-                        typeof(SOSNodeDataBase<SGraphTransitionData, SGraphRequirementData>),
+                        typeof(NodeSOB<TransitionD, RequirementD>),
                         false,
                         reqStyleTag
                     );
@@ -198,7 +198,7 @@ namespace FuzzPhyte.SGraph.Editor
             }
             if (GUILayout.Button("Add Requirement"))
             {
-                nodeMonoScript.RuntimeNode.Requirements.Add(new SGraphRequirementData());
+                nodeMonoScript.RuntimeNode.Requirements.Add(new RequirementD());
             }
         } 
           
@@ -336,7 +336,7 @@ namespace FuzzPhyte.SGraph.Editor
                         }
                     }
                     //SGraphGONode<SGraphTransitionData, string>
-                    var returnData = JsonSerialization.FromJson<SOSNodeDataBase<SGraphTransitionData,SGraphRequirementData>>(content);
+                    var returnData = JsonSerialization.FromJson<NodeSOB<TransitionD,RequirementD>>(content);
                     nodeMonoScript.RuntimeNode = returnData;
                     return (true, assetPath);
                 }
@@ -375,7 +375,7 @@ namespace FuzzPhyte.SGraph.Editor
                     //var anyErrors = ReadEditorPrefsJSON();
                     //setup our tags to match if we need more
                     //SOSGraphNodeData
-                    var returnData = JsonUtility.FromJson<SOSNodeDataBase<SGraphTransitionData,SGraphRequirementData>>(content);
+                    var returnData = JsonUtility.FromJson<NodeSOB<TransitionD,RequirementD>>(content);
                     //var returnData = JsonUtility.FromJson<SOSGraphNodeData>(content);
                     //we maybe got some data
                     nodeMonoScript.RuntimeNode = returnData;

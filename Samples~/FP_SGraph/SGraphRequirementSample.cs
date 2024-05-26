@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FuzzPhyte.SGraph.Samples
 {
-    public class SGraphRequirementSample : SRequireTypeSharpBase<string>
+    public class SGraphRequirementSample : RequirementSB<string>
     {
         public SGraphRequirementSample(string requiredType) : base(requiredType)
         {
