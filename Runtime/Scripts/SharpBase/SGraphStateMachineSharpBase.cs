@@ -7,42 +7,51 @@ namespace FuzzPhyte.SGraph
     /// <summary>
     /// Abstract class for an 'Event' in the SGraph
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class SGraphStateMachine<T> 
+    /// <typeparam name="R">requirement</typeparam>
+    public abstract class SGraphStateMachineSharpBase<R> where R : struct
     {
         public SequenceStatus CurrentState { get; protected set; }
-        protected List<IRequirement<T>> unlockRequirements;
+        protected List<R> unlockRequirements;
         protected Dictionary<SequenceTransition, SequenceStatus> stateTransitions;
-        protected Dictionary<SequenceStatus, List<Action>> stateActions;
-        public delegate void StateEventHandler(SGraphStateMachine<T>sEvent);
+        protected Dictionary<int,List<Action>> stateActions;
+        //protected Dictionary<SequenceStatus, List<Action>> stateActions;
+        public delegate void StateEventHandler(SGraphStateMachineSharpBase<R>sEvent);
         public event StateEventHandler OnFinish;
         public event StateEventHandler OnUnlocked;
         public event StateEventHandler OnLocked;
         public event StateEventHandler OnActive;
 
         #region Constructors
-        protected SGraphStateMachine(SequenceStatus startingState)
+        public SGraphStateMachineSharpBase(List<R>requirements)
+        {
+            CurrentState = SequenceStatus.Locked;
+            unlockRequirements = requirements;
+            stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
+            stateActions = new Dictionary<int, List<Action>>();
+        }
+       
+        protected SGraphStateMachineSharpBase(SequenceStatus startingState)
         {
             CurrentState = startingState;
-            unlockRequirements = new List<IRequirement<T>>();
+            unlockRequirements = new List<R>();
             stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
-            stateActions = new Dictionary<SequenceStatus, List<Action>>();
+            stateActions = new Dictionary<int, List<Action>>();
         }
-        protected SGraphStateMachine(SequenceStatus startingState, List<IRequirement<T>> requirements)
+        protected SGraphStateMachineSharpBase(SequenceStatus startingState, List<R> requirements)
         {
             CurrentState = startingState;
             unlockRequirements = requirements;
             stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
-            stateActions = new Dictionary<SequenceStatus, List<Action>>();
+            stateActions = new Dictionary<int, List<Action>>();
         }
-        protected SGraphStateMachine(SequenceStatus startingState, List<IRequirement<T>> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions)
+        protected SGraphStateMachineSharpBase(SequenceStatus startingState, List<R> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions)
         {
             CurrentState = startingState;
             unlockRequirements = requirements;
             stateTransitions = transitions;
-            stateActions = new Dictionary<SequenceStatus, List<Action>>();
+            stateActions = new Dictionary<int, List<Action>>();
         }
-        protected SGraphStateMachine(SequenceStatus startingState, List<IRequirement<T>> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<SequenceStatus, List<Action>> actions)
+        protected SGraphStateMachineSharpBase(SequenceStatus startingState, List<R> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<int, List<Action>> actions)
         {
             CurrentState = startingState;
             unlockRequirements = requirements;
@@ -50,56 +59,70 @@ namespace FuzzPhyte.SGraph
             stateActions = actions;
         }
         #endregion
+        #region Decode/Code Unique Index by Transition and Outcome
+        protected virtual int ReturnUniqueIndexByTransitionAndOutcome(SequenceTransition transition, SequenceStatus outcome)
+        {
+            return (int)transition * 100 + (int)outcome;
+        }
+        protected virtual (SequenceTransition, SequenceStatus) ReturnTransitionAndOutcomeByUniqueIndex(int index)
+        {
+            int transition = index / 100;
+            int outcome = index % 100;
+            return ((SequenceTransition)transition, (SequenceStatus)outcome);
+        }
+        #endregion
         #region Update State Transitions and Requirements
-        protected virtual void AddUnlockRequirement(IRequirement<T> requirement)
+        public virtual void AddUnlockRequirement(R requirement)
         {
             if(!unlockRequirements.Contains(requirement))
             {
                 unlockRequirements.Add(requirement);
             }
         }
-        protected virtual void RemoveUnlockRequirement(IRequirement<T> requirement)
+        public virtual void RemoveUnlockRequirement(R requirement)
         {
             if(unlockRequirements.Contains(requirement))
             {
                 unlockRequirements.Remove(requirement);
             }
         }
-        protected virtual void AddStateTransition(SequenceTransition transition, SequenceStatus newState)
+        public virtual void AddStateTransition(SequenceTransition transition, SequenceStatus newState)
         {
             if(!stateTransitions.ContainsKey(transition))
             {
                 stateTransitions.Add(transition, newState);
             }
         }
-        protected virtual void RemoveStateTransition(SequenceTransition transition)
+        public virtual void RemoveStateTransition(SequenceTransition transition)
         {
             if(stateTransitions.ContainsKey(transition))
             {
                 stateTransitions.Remove(transition);
             }
         }
-        protected virtual void AddStateAction(SequenceStatus state, Action action)
+        public virtual void AddStateAction(SequenceStatus state,SequenceTransition transition, Action action)
         {
-            if(!stateActions.ContainsKey(state))
+            var index = ReturnUniqueIndexByTransitionAndOutcome(transition, state);
+            if(!stateActions.ContainsKey(index))
             {
-                stateActions.Add(state, new List<Action>());
+                stateActions.Add(index, new List<Action>());
             }
-            stateActions[state].Add(action);
+            stateActions[index].Add(action);
         }
-        protected virtual void RemoveStateAction(SequenceStatus state, Action action)
+        public virtual void RemoveStateAction(SequenceStatus state,SequenceTransition transition, Action action)
         {
-            if(stateActions.ContainsKey(state))
+            var index = ReturnUniqueIndexByTransitionAndOutcome(transition, state);
+            if(stateActions.ContainsKey(index))
             {
                 //check if the action is in the running list because we don't want to remove an action that isn't there
-                if (stateActions[state].Contains(action))
+                if (stateActions[index].Contains(action))
                 {
-                    stateActions[state].Remove(action);
+                    stateActions[index].Remove(action);
                 }
                 //clear the state if we have no actions left
-                if (stateActions[state].Count == 0)
+                if (stateActions[index].Count == 0)
                 {
-                    stateActions.Remove(state);
+                    stateActions.Remove(index);
                 }
             }
         }
@@ -128,7 +151,7 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         /// <param name="transition"></param>
         /// <returns></returns>
-        public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition, List<T> requirementValue)
+        public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition, List<R> requirementValue)
         {
             if (!MeetsRequirements(requirementValue))
             {
@@ -170,12 +193,13 @@ namespace FuzzPhyte.SGraph
             if(stateTransitions.ContainsKey(transition))
             {
                 CurrentState = stateTransitions[transition];
+                var keyByTransitionAndState = ReturnUniqueIndexByTransitionAndOutcome(transition, CurrentState);
                 //invoke actions in order
-                if(stateActions.ContainsKey(CurrentState))
+                if(stateActions.ContainsKey(keyByTransitionAndState))
                 {
-                    for(int i = 0; i < stateActions[CurrentState].Count; i++)
+                    for(int i = 0; i < stateActions[keyByTransitionAndState].Count; i++)
                     {
-                        stateActions[CurrentState][i].Invoke();
+                        stateActions[keyByTransitionAndState][i].Invoke();
                     }
                 }
                 return (true,CurrentState);
@@ -186,6 +210,6 @@ namespace FuzzPhyte.SGraph
         /// Requirements Logic for the list of Requirements
         /// </summary>
         /// <returns></returns>
-        public abstract bool MeetsRequirements(List<T> parameter, bool useLockedState=true);
+        public abstract bool MeetsRequirements(List<R> parameter, bool useLockedState=true);
     }
 }

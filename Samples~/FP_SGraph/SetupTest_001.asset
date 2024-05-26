@@ -53,6 +53,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: bb6bb93e0f1b04eb6851aa2c082d1aae, type: 2}
   - {fileID: 11400000, guid: 015fea063bc8b49cb9e01c73037d218b, type: 2}
   Requirements:
-  - Introduction
+  - RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
+    RequirementName: John
+    RequirementMet: 1
+  - RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
+    RequirementName: Ann
+    RequirementMet: 1
   IsStartNode: 1
   StartingState: 1

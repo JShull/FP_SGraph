@@ -8,13 +8,13 @@ namespace FuzzPhyte.SGraph
     /// with our abstract SGraphNodeData class
     /// </summary>
     [Serializable]
-    public abstract class SGraphGONode<T,A> : MonoBehaviour where T:struct
+    public abstract class SGraphGONodeMonoBase<T,R> : MonoBehaviour where T:struct where R:struct
     {
-
-        public SOSNodeData<T, A> NodeDataTemplate;
+        public SGraphNodeSharpBase<T,R> NodeSharp { get; set; }
+        public SOSNodeDataBase<T, R> NodeDataTemplate;
         public List<T> EventsByType;
-        protected SOSNodeData<T, A> runtimeNode;
-        public SOSNodeData<T, A> RuntimeNode
+        protected SOSNodeDataBase<T, R> runtimeNode;
+        public SOSNodeDataBase<T, R> RuntimeNode
         {
             get
             {
@@ -28,6 +28,6 @@ namespace FuzzPhyte.SGraph
         /// <summary>
         /// Uses the template data to build a runtime node with scene/gameobject references
         /// </summary>
-        public abstract SOSNodeData<T, A> BuildRuntimeNode();
+        public abstract SOSNodeDataBase<T, R> BuildRuntimeNode();
     }
 }

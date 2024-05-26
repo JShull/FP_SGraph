@@ -36,7 +36,7 @@ MonoBehaviour:
     OutcomeStatus: 1
     UnityActionEvents: []
   Connections:
-  - {fileID: 11400000, guid: cc9850eee292cfd408815d25f31d1e1b, type: 2}
+  - {fileID: 11400000, guid: 015fea063bc8b49cb9e01c73037d218b, type: 2}
   Requirements: []
   IsStartNode: 0
   StartingState: 1

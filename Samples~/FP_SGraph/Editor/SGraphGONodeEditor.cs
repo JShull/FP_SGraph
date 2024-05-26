@@ -8,43 +8,70 @@ namespace FuzzPhyte.SGraph.Editor
     using System.IO;
     using System;
     using UnityEngine.SceneManagement;
-    using FuzzPhyte.Utility;
+    using FuzzPhyte.Utility.Meta;
     using Unity.Serialization.Json;
     using System.Text;
-
+    using SGUtility = FP_SGraphUtility<SGraphTransitionData, SGraphRequirementData>;
     [CustomEditor(typeof(SGraphGONodeMono))]
     public class SGraphGONodeEditor : Editor
     {
-        private Color defaultEditorColor = new Color(1,0.5f,0,1);
-        private Color defaultHoverColor = Color.yellow;
-        private Color defaultBoxColorText = Color.white;
-        private Color defaultBoxColorTextHover = Color.blue;
-        private Color defaultBoxColorTextFocused = Color.cyan;
+        private bool showConnections = true;
+        private bool showRequirements = true;
+        
+        private string ShowConnectionsKey = "SGraphGONodeEditor_ShowConnections";
+        private string ShowRequirementsKey = "SGraphGONodeEditor_ShowRequirements";
+        private void OnEnable()
+        {
+            SetKeys();
+            showConnections = EditorPrefs.GetBool(ShowConnectionsKey);
+            showRequirements = EditorPrefs.GetBool(ShowRequirementsKey);
+        }
+        private void SetKeys()
+        {
+            SGraphGONodeMono nodeMonoScript = (SGraphGONodeMono)target;
+            ShowConnectionsKey = nodeMonoScript.GetInstanceID() + "_ShowConnections";
+            ShowRequirementsKey = nodeMonoScript.GetInstanceID() + "_ShowRequirements";
+        }
+        private void OnDisable()
+        {
+            EditorPrefs.SetBool(ShowConnectionsKey, showConnections);
+            EditorPrefs.SetBool(ShowRequirementsKey, showRequirements);
+        }
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
             SGraphGONodeMono nodeMonoScript = (SGraphGONodeMono)target;
-            //Connection List
-            ShowConnectionsList(nodeMonoScript);
-            //Requirement List
-            // Show Requirements List
-            ShowRequirementsList(nodeMonoScript);
+            // Connection List
+            showConnections = EditorGUILayout.Foldout(showConnections, "Connections");
+            if (showConnections)
+            {
+                ShowConnectionsList(nodeMonoScript, SGUtility.requiredStyleTag);
+            }
+            EditorPrefs.SetBool(ShowConnectionsKey, showConnections);
+            // Requirement List
+            showRequirements = EditorGUILayout.Foldout(showRequirements, "Requirements");
+            if (showRequirements)
+            {
+                ShowRequirementsList(nodeMonoScript, SGUtility.requiredStyleTag, SGUtility.requiredStyleName);
+            }
+            EditorPrefs.SetBool(ShowRequirementsKey, showRequirements);
+            
             GUIStyle copyScriptableObjectDataButtonStyle = new GUIStyle(GUI.skin.button)
             {
-                normal = { textColor = defaultEditorColor },
-                hover = { textColor = defaultHoverColor }
+                normal = { textColor = SGUtility.DefaultEditorColor },
+                hover = { textColor = SGUtility.DefaultEditorHoverColor }
             };
             
             GUIStyle boxStyle = new GUIStyle(GUI.skin.box){
                 margin = new RectOffset(15, 5, 5, 5),
-                normal = {textColor = defaultBoxColorText},
-                hover = {textColor = defaultBoxColorTextHover},
+                normal = {textColor = SGUtility.DefaultBoxColorText},
+                hover = {textColor = SGUtility.DefaultBoxColorTextHover},
                 border = new RectOffset(20, 7, 7, 7),
-                focused = {textColor = defaultBoxColorTextFocused},
+                focused = {textColor = SGUtility.DefaultBoxColorTextFocused},
             };
             
-            EditorGUILayout.Space(20);
-            FP_Utility_Editor.DrawUILine(defaultEditorColor, 5, 5);
+            EditorGUILayout.Space(25);
+            FP_Utility_Editor.DrawUILine(SGUtility.LineBreakWarningColor, 5, 0);
             EditorGUILayout.Space(10);
             EditorGUILayout.BeginVertical(boxStyle);
 
@@ -53,8 +80,6 @@ namespace FuzzPhyte.SGraph.Editor
             {
                 GenerateEventsByType(nodeMonoScript);
             }
-            EditorGUILayout.Space(10);
-            FP_Utility_Editor.DrawUILine(defaultEditorColor, 5, 5);
             EditorGUILayout.Space(20);
             if (GUILayout.Button("Build Copied Data", copyScriptableObjectDataButtonStyle))
             {
@@ -81,66 +106,102 @@ namespace FuzzPhyte.SGraph.Editor
                 EditorUtility.SetDirty(nodeMonoScript);
             }
         }
-        private void ShowConnectionsList(SGraphGONodeMono nodeMonoScript)
+        private void ShowConnectionsList(SGraphGONodeMono nodeMonoScript,GUILayoutOption[] reqStyleTag)
         {
             EditorGUILayout.LabelField("Connections", EditorStyles.boldLabel);
-
+            FP_Utility_Editor.DrawUILine(SGUtility.DefaultEditorColor, 5, 5);
             if (nodeMonoScript.RuntimeNode != null && nodeMonoScript.RuntimeNode.Connections != null)
             {
                 for (int i = 0; i < nodeMonoScript.RuntimeNode.Connections.Count; i++)
                 {
+                    EditorGUILayout.BeginVertical("box");
                     EditorGUILayout.BeginHorizontal();
-                    nodeMonoScript.RuntimeNode.Connections[i] = (SOSNodeData<SGraphTransitionData, string>)EditorGUILayout.ObjectField(
-                        $"Connection {i + 1}",
-                        nodeMonoScript.RuntimeNode.Connections[i],
-                        typeof(SOSNodeData<SGraphTransitionData, string>),
-                        false
-                    );
 
-                    if (GUILayout.Button("Remove"))
+                    EditorGUILayout.BeginVertical();
+                    EditorGUILayout.LabelField($"Connection {i + 1}", reqStyleTag);
+                    nodeMonoScript.RuntimeNode.Connections[i] = (SOSNodeDataBase<SGraphTransitionData, SGraphRequirementData>)EditorGUILayout.ObjectField(
+                        nodeMonoScript.RuntimeNode.Connections[i],
+                        typeof(SOSNodeDataBase<SGraphTransitionData, SGraphRequirementData>),
+                        false,
+                        reqStyleTag
+                    );
+                    EditorGUILayout.EndVertical();
+
+                    EditorGUILayout.BeginVertical();
+                    if (GUILayout.Button("X",SGUtility.closeButtonStyle))
                     {
                         nodeMonoScript.RuntimeNode.Connections.RemoveAt(i);
                         i--; // Adjust index after removal
                     }
-
+                    EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.EndVertical();
+                   
                 }
             }
-
+            FP_Utility_Editor.DrawUILine(SGUtility.DefaultEditorColor, 5, 5);
             if (GUILayout.Button("Add Connection"))
             {
                 nodeMonoScript.RuntimeNode.Connections.Add(null);
             }
         }
-        private void ShowRequirementsList(SGraphGONodeMono nodeMonoScript)
+        
+        private void ShowRequirementsList(SGraphGONodeMono nodeMonoScript,GUILayoutOption[] reqStyleTag,GUILayoutOption[] reqStyleName)
         {
             EditorGUILayout.LabelField("Requirements", EditorStyles.boldLabel);
-
+            FP_Utility_Editor.DrawUILine(SGUtility.DefaultEditorColor, 5, 5);
             if (nodeMonoScript.RuntimeNode != null && nodeMonoScript.RuntimeNode.Requirements != null)
             {
                 for (int i = 0; i < nodeMonoScript.RuntimeNode.Requirements.Count; i++)
                 {
-                    EditorGUILayout.BeginHorizontal();
-                    nodeMonoScript.RuntimeNode.Requirements[i] = (string)EditorGUILayout.TextField(
-                        $"Requirement {i + 1}",
-                        nodeMonoScript.RuntimeNode.Requirements[i]
-                    );
+                    var requirement = nodeMonoScript.RuntimeNode.Requirements[i];
 
-                    if (GUILayout.Button("Remove"))
+                    EditorGUILayout.BeginVertical("box");
+                    EditorGUILayout.BeginHorizontal();
+
+                    EditorGUILayout.BeginVertical();
+                    EditorGUILayout.LabelField($"Requirement {i + 1}", reqStyleTag);
+                    requirement.RequirementTag = (FP_Tag)EditorGUILayout.ObjectField(
+                        requirement.RequirementTag,
+                        typeof(FP_Tag),
+                        false,
+                        reqStyleTag
+                    );
+                    EditorGUILayout.EndVertical();
+
+                    EditorGUILayout.BeginVertical();
+                    EditorGUILayout.LabelField("Name", reqStyleName);
+                    requirement.RequirementName = EditorGUILayout.TextField(
+                        requirement.RequirementName,
+                        reqStyleName
+                    );
+                    EditorGUILayout.EndVertical();
+
+                    EditorGUILayout.BeginVertical();
+                    EditorGUILayout.LabelField("Met", GUILayout.Width(25));
+                    requirement.RequirementMet = EditorGUILayout.Toggle(
+                        requirement.RequirementMet,
+                        GUILayout.Width(25)
+                    );
+                    EditorGUILayout.EndVertical();
+                    nodeMonoScript.RuntimeNode.Requirements[i] = requirement;
+                    if (GUILayout.Button("X", SGUtility.closeButtonStyle))
                     {
                         nodeMonoScript.RuntimeNode.Requirements.RemoveAt(i);
                         i--; // Adjust index after removal
                     }
-
                     EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.EndVertical();
+                    
                 }
+                FP_Utility_Editor.DrawUILine(SGUtility.DefaultEditorColor, 5, 5);
             }
-
             if (GUILayout.Button("Add Requirement"))
             {
-                nodeMonoScript.RuntimeNode.Requirements.Add(string.Empty);
+                nodeMonoScript.RuntimeNode.Requirements.Add(new SGraphRequirementData());
             }
-        }     
+        } 
+          
         private void GenerateEventsByType(SGraphGONodeMono nodeMonoScript)
         {
             nodeMonoScript.RuntimeNode = nodeMonoScript.BuildRuntimeNode();
@@ -168,7 +229,7 @@ namespace FuzzPhyte.SGraph.Editor
                 nodeMonoScript.RuntimeNode = nodeMonoScript.BuildRuntimeNode();
                 //save this scriptableobject to a file and update asset database
                 EditorUtility.SetDirty(nodeMonoScript);
-                var localSamplesFolder = FP_SGraphUtility<SGraphTransitionData, string>.ReturnInstallPath();
+                var localSamplesFolder = SGUtility.ReturnInstallPath();
 
                 (bool, string) dataPath = (false, "");
                 try
@@ -182,25 +243,25 @@ namespace FuzzPhyte.SGraph.Editor
                         Directory.CreateDirectory(potentialFolder);
                     }
 
-                    if (File.Exists(Path.Combine(potentialFolder, FP_SGraphUtility<SGraphTransitionData, string>.SAMPLELOCALFOLDER)))
+                    if (File.Exists(Path.Combine(potentialFolder, SGUtility.SAMPLELOCALFOLDER)))
                     {
-                        Debug.Log($"Local Samples Folder: {FP_SGraphUtility<SGraphTransitionData, string>.SAMPLELOCALFOLDER} exists!");
+                        Debug.Log($"Local Samples Folder: {SGUtility.SAMPLELOCALFOLDER} exists!");
                     }
                     else
                     {
-                        Directory.CreateDirectory(Path.Combine(potentialFolder, FP_SGraphUtility<SGraphTransitionData, string>.SAMPLELOCALFOLDER));
+                        Directory.CreateDirectory(Path.Combine(potentialFolder, SGUtility.SAMPLELOCALFOLDER));
                     }
                     Debug.Log($"Before Assets: {localSamplesFolder}");
                     localSamplesFolder = Path.Combine("Assets", localSamplesFolder);
                     Debug.Log($"After Assets: {localSamplesFolder}");
                     AssetDatabase.Refresh();
-                    dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(localSamplesFolder, FP_SGraphUtility<SGraphTransitionData, string>.SAMPLELOCALFOLDER);
+                    dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(localSamplesFolder, SGUtility.SAMPLELOCALFOLDER);
                     if (!dataPath.Item1)
                     {
                         Debug.LogError($"Error on Path Creation, check the logs! Path at: {dataPath.Item2}");
                         return dataPath;
                     }
-                    var returnPath = FP_SGraphUtility<SGraphTransitionData, string>.WriteSOSNodeData(nodeMonoScript.RuntimeNode, dataPath.Item2, "SOSNodeData.asset");
+                    var returnPath = SGUtility.WriteSOSNodeData(nodeMonoScript.RuntimeNode, dataPath.Item2, "SOSNodeData.asset");
                     Debug.Log($"Asset saved at {returnPath}");
                     AssetDatabase.SaveAssets();
                     //write JSON
@@ -275,7 +336,7 @@ namespace FuzzPhyte.SGraph.Editor
                         }
                     }
                     //SGraphGONode<SGraphTransitionData, string>
-                    var returnData = JsonSerialization.FromJson<SOSNodeData<SGraphTransitionData,string>>(content);
+                    var returnData = JsonSerialization.FromJson<SOSNodeDataBase<SGraphTransitionData,SGraphRequirementData>>(content);
                     nodeMonoScript.RuntimeNode = returnData;
                     return (true, assetPath);
                 }
@@ -314,7 +375,7 @@ namespace FuzzPhyte.SGraph.Editor
                     //var anyErrors = ReadEditorPrefsJSON();
                     //setup our tags to match if we need more
                     //SOSGraphNodeData
-                    var returnData = JsonUtility.FromJson<SOSNodeData<SGraphTransitionData,string>>(content);
+                    var returnData = JsonUtility.FromJson<SOSNodeDataBase<SGraphTransitionData,SGraphRequirementData>>(content);
                     //var returnData = JsonUtility.FromJson<SOSGraphNodeData>(content);
                     //we maybe got some data
                     nodeMonoScript.RuntimeNode = returnData;

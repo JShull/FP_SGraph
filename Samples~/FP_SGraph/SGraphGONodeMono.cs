@@ -6,16 +6,18 @@ namespace FuzzPhyte.SGraph.Samples
     /// <summary>
     /// A Sample Gameobject Node
     /// </summary>
-    public class SGraphGONodeMono : SGraphGONode<SGraphTransitionData,string>
+    public class SGraphGONodeMono : SGraphGONodeMonoBase<SGraphTransitionData,SGraphRequirementData>
     {
         [Header("Backup Data")]
         public TextAsset JSONData;
-        public override SOSNodeData<SGraphTransitionData, string> BuildRuntimeNode()
+        public override SOSNodeDataBase<SGraphTransitionData, SGraphRequirementData> BuildRuntimeNode()
         {
             //return base.BuildRuntimeNode();
             //copy data from my NodeDataTemplate to this runtimeNode
             var tempData = Instantiate(NodeDataTemplate);
-
+            //need unique ID from Unity 
+            NodeSharp = new SGNode(this.gameObject.GetInstanceID().ToString());
+            //NodeSharp =  new  this.gameObject.GetInstanceID().ToString());
             //go through my NodeDataTemplate - find the StateTransitions and match them with my EventsByType
             //if they match, add the event to the NodeDataTemplate
             for (int i = 0; i < NodeDataTemplate.StateTransitions.Count; i++)
@@ -37,6 +39,7 @@ namespace FuzzPhyte.SGraph.Samples
                     }
                 }
             }
+            
             return tempData;
         }
         /// <summary>
