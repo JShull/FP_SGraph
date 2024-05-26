@@ -19,7 +19,7 @@ namespace FuzzPhyte.SGraph.Editor{
             SGraphWebManager manager = (SGraphWebManager)target;
 
             EditorGUILayout.Space();
-            var goNodes = FindObjectsOfType(typeof(SGraphGONodeMono));
+            var goNodes = FindObjectsOfType(typeof(NodeMBEx));
             EditorGUILayout.BeginVertical();
             EditorGUILayout.LabelField("Scene Node Count:", goNodes.Length.ToString());
             EditorGUILayout.LabelField("Unity Nodes Count:", manager.UnityNodes != null ? manager.UnityNodes.Count.ToString() : "0");

@@ -11,7 +11,6 @@ using System.Collections.Generic;
 
 namespace FuzzPhyte.SGraph.Editor
 {
-    [Serializable]
     public static class FP_SGraphUtility<T,R> where T: struct where R: struct
     {
         public const string PRODUCT_NAME = "FP_SGraph";

@@ -8,14 +8,14 @@ namespace FuzzPhyte.SGraph.Samples
     public class SGraphWebManager : WebManagerMB<TransitionD, RequirementD, SOSGraphNodeDataEx>
     {
         //private SGraphWebSharpEx graphWeb;
-        public SGraphGONodeMono MonoNode;
+        public NodeMBEx MonoNode;
         public SGNode EntryDataNode;
         
         private void Awake()
         {
             if(MonoNode != null)
             {
-                MonoNode.BuildRuntimeNode();
+                //MonoNode.BuildRuntimeNode();
                 if(EntryDataNode == null)
                 {
                     EntryDataNode = (SGNode)MonoNode.NodeSharp;
@@ -45,7 +45,7 @@ namespace FuzzPhyte.SGraph.Samples
         {
             
             var currentState = data.StartingState;
-            SGraphStateMachineData eventData = new SGraphStateMachineData(currentState);
+            SGStateMachine eventData = new SGStateMachine(currentState);
             //Dictionary<SequenceTransition, SequenceStatus> stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
             //Dictionary<int, List<Action>> stateActions = new Dictionary<int, List<Action>>();
             //Dictionary<SequenceStatus, List<Action>> stateActions = new Dictionary<SequenceStatus, List<Action>>();
@@ -72,13 +72,13 @@ namespace FuzzPhyte.SGraph.Samples
             unityNodes.Clear();
 
             //get a list of gameObjects by the component type SGraphGoNode base
-            var goNodes = FindObjectsOfType(typeof(SGraphGONodeMono));
+            var goNodes = FindObjectsOfType(typeof(NodeMBEx));
             // Update with new nodes
             for(int i=0;i<DataNodes.Count;i++)
             {
                 var aDataNode = DataNodes[i];
                 for(int j=0;j<goNodes.Length;j++){
-                    var goNode = goNodes[j] as SGraphGONodeMono;
+                    var goNode = goNodes[j] as NodeMBEx;
                     if(goNode.NodeDataTemplate == aDataNode){
                         unityNodes.Add(aDataNode,goNode.gameObject);
                     }

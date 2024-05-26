@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028326, g: 0.22571333, b: 0.30692202, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -303,10 +302,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 874219775}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bc9c4b4d9ce7c34d8c9227f3ce01d3d, type: 3}
+  m_Script: {fileID: 11500000, guid: bb8271184042c2048a3fdbb58a6f0713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NodeDataTemplate: {fileID: 11400000, guid: bb6bb93e0f1b04eb6851aa2c082d1aae, type: 2}
+  StartState: 1
   EventsByType:
   - Transition: 0
     OutcomeStatus: 1
@@ -329,7 +328,10 @@ MonoBehaviour:
   - Transition: 6
     OutcomeStatus: 1
     UnityActionEvents: []
-  JSONData: {fileID: 4900000, guid: 83c15dc422ca35f49b0d151a93e42cfc, type: 3}
+  NodeDataGen: {fileID: 11400000, guid: bb6bb93e0f1b04eb6851aa2c082d1aae, type: 2}
+  ConnectedNodes:
+  - {fileID: 1437442647}
+  JSONData: {fileID: 0}
 --- !u!4 &874219777
 Transform:
   m_ObjectHideFlags: 0
@@ -489,10 +491,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1437442646}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bc9c4b4d9ce7c34d8c9227f3ce01d3d, type: 3}
+  m_Script: {fileID: 11500000, guid: bb8271184042c2048a3fdbb58a6f0713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NodeDataTemplate: {fileID: 11400000, guid: 015fea063bc8b49cb9e01c73037d218b, type: 2}
+  StartState: 1
   EventsByType:
   - Transition: 0
     OutcomeStatus: 1
@@ -515,6 +517,8 @@ MonoBehaviour:
   - Transition: 6
     OutcomeStatus: 1
     UnityActionEvents: []
+  NodeDataGen: {fileID: 11400000, guid: 015fea063bc8b49cb9e01c73037d218b, type: 2}
+  ConnectedNodes: []
   JSONData: {fileID: 0}
 --- !u!4 &1437442648
 Transform:
@@ -572,10 +576,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1659993764}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bc9c4b4d9ce7c34d8c9227f3ce01d3d, type: 3}
+  m_Script: {fileID: 11500000, guid: bb8271184042c2048a3fdbb58a6f0713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NodeDataTemplate: {fileID: 11400000, guid: cc9850eee292cfd408815d25f31d1e1b, type: 2}
+  StartState: 1
   EventsByType:
   - Transition: 0
     OutcomeStatus: 1
@@ -584,7 +588,7 @@ MonoBehaviour:
     OutcomeStatus: 2
     UnityActionEvents: []
   - Transition: 2
-    OutcomeStatus: 1
+    OutcomeStatus: 3
     UnityActionEvents: []
   - Transition: 3
     OutcomeStatus: 2
@@ -598,6 +602,10 @@ MonoBehaviour:
   - Transition: 6
     OutcomeStatus: 1
     UnityActionEvents: []
+  NodeDataGen: {fileID: 11400000, guid: cc9850eee292cfd408815d25f31d1e1b, type: 2}
+  ConnectedNodes:
+  - {fileID: 874219776}
+  - {fileID: 1437442647}
   JSONData: {fileID: 0}
 --- !u!1 &1867545443
 GameObject:

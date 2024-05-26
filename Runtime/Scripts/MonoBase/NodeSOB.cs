@@ -10,8 +10,6 @@ namespace FuzzPhyte.SGraph
     /// </summary>
     /// <typeparam name="T">the transition data struct</typeparam>
     /// <typeparam name="R">the requirement type</typeparam>
-    [Serializable]
-    
     public abstract class NodeSOB<T,R> : ScriptableObject where T : struct where R : struct
     {
         public string NodeIDName;

@@ -21,7 +21,7 @@ MonoBehaviour:
     OutcomeStatus: 2
     UnityActionEvents: []
   - Transition: 2
-    OutcomeStatus: 1
+    OutcomeStatus: 3
     UnityActionEvents: []
   - Transition: 3
     OutcomeStatus: 2

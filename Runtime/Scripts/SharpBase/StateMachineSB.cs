@@ -14,7 +14,6 @@ namespace FuzzPhyte.SGraph
         protected List<R> unlockRequirements;
         protected Dictionary<SequenceTransition, SequenceStatus> stateTransitions;
         protected Dictionary<int,List<Action>> stateActions;
-        //protected Dictionary<SequenceStatus, List<Action>> stateActions;
         public delegate void StateEventHandler(StateMachineSB<R>sEvent);
         public event StateEventHandler OnFinish;
         public event StateEventHandler OnUnlocked;
@@ -153,7 +152,7 @@ namespace FuzzPhyte.SGraph
         /// <returns></returns>
         public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition, List<R> requirementValue)
         {
-            if (!MeetsRequirements(requirementValue))
+            if (!UpdateUnlockCheckRequirementsList(requirementValue))
             {
                 return (false,CurrentState);
             }
@@ -206,10 +205,25 @@ namespace FuzzPhyte.SGraph
             }
             return (false,CurrentState);
         }
+
         /// <summary>
-        /// Requirements Logic for the list of Requirements
+        /// Checks against our UnlockRequirements List to see if we have any left
         /// </summary>
         /// <returns></returns>
-        public abstract bool MeetsRequirements(List<R> parameter, bool useLockedState=true);
+        public virtual bool MeetsRequirements()
+        {
+            if (unlockRequirements.Count == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+        /// <summary>
+        /// update the requirements list with passed parameters for unlocking
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public abstract bool UpdateUnlockCheckRequirementsList(List<R> parameters);
+        
     }
 }

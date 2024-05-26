@@ -1,5 +1,6 @@
 namespace FuzzPhyte.SGraph
 {
+    using FuzzPhyte.Utility;
     using System;
     using System.Collections.Generic;
     using UnityEngine;
@@ -7,27 +8,19 @@ namespace FuzzPhyte.SGraph
     /// A monobehaviour that represents the Unity Scene GameObject references needed to pair
     /// with our abstract SGraphNodeData class
     /// </summary>
-    [Serializable]
     public abstract class UNodeMB<T,R> : MonoBehaviour where T:struct where R:struct
     {
-        public NodeSB<T,R> NodeSharp { get; set; }
-        public NodeSOB<T, R> NodeDataTemplate;
+        public SequenceStatus StartState;
+        public abstract NodeSB<T,R> NodeSharp { get; set; }
+        public abstract NodeSOB<T, R> NodeDataTemplate { get; set; }
         public List<T> EventsByType;
-        protected NodeSOB<T, R> runtimeNode;
-        public NodeSOB<T, R> RuntimeNode
-        {
-            get
-            {
-                return runtimeNode;
-            }
-            set
-            {
-                runtimeNode = value;
-            }
-        }
+        public abstract List<UNodeMB<T, R>> UnityOutConnections { get; set; }
+        
         /// <summary>
-        /// Uses the template data to build a runtime node with scene/gameobject references
+        /// Build out the runtime node NodeSharp from the NodeDataTemplate
         /// </summary>
-        public abstract NodeSOB<T, R> BuildRuntimeNode();
+        /// <param name="requirements"></param>
+        /// <param name="transitions"></param>
+        public abstract void BuildRuntimeNode(List<R>requirements, List<T>transitions);
     }
 }
