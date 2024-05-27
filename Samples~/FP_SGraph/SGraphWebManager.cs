@@ -4,44 +4,80 @@ namespace FuzzPhyte.SGraph.Samples
     using UnityEngine;
     using FuzzPhyte.Utility;
     using System;
+    using System.Linq;
+    using UnityEngine.Events;
+
     // Main Mono Class for the Sample 
-    public class SGraphWebManager : WebManagerMB<TransitionD, RequirementD, SOSGraphNodeDataEx>
+    public class SGraphWebManager : WebManagerMB<TransitionD, RequirementD, NodeDataSOBEx>
     {
+        public bool StartWebOnPlay = true;
         //private SGraphWebSharpEx graphWeb;
-        public NodeMBEx MonoNode;
+        public NodeMBEx EntryNode;
         public SGNode EntryDataNode;
-        
+        [SerializeField]
+        private List<NodeMBEx> allNodesInScene = new List<NodeMBEx>();
+        public WebDataEx TheWeb; 
+        public Dictionary<NodeDataSOBEx,NodeMBEx> unityNodes;
+        [SerializeField]
+        private List<NodeDataSOBEx> dataNodes;
+        public override List<NodeDataSOBEx> DataNodes { get => dataNodes; set {dataNodes=value;} }
+
+        //public override List<NodeDataSOBEx> DataNodes { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        // public override WebSB<TransitionD, RequirementD> TheWeb { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         private void Awake()
         {
-            if(MonoNode != null)
+            if(EntryNode != null)
             {
-                //MonoNode.BuildRuntimeNode();
-                if(EntryDataNode == null)
-                {
-                    EntryDataNode = (SGNode)MonoNode.NodeSharp;
-                }
+                //quick Setup so we can build the web data class out
+                EntryDataNode = EntryNode.InitialSetup();
             }
-            if(EntryDataNode != null)
-            {
-                TheWeb = new SGraphWebSharpEx(EntryDataNode);
-            }
+            
         }
         private void OnEnable()
         {
-            if(unityNodes == null)
-            {
-                UpdateAllNodes();
-            }
+            UpdateAllNodes();
         }
         private void Start()
         {
-            
+            //build out web data 
+            if(EntryDataNode != null)
+            {
+                TheWeb = new WebDataEx(EntryDataNode);
+            }else{
+                Debug.LogWarning("No Entry Data Node was set");
+                return;
+            }
+            //build each node in the graph over a loop
+
+            for(int i=0;i<allNodesInScene.Count;i++)
+            {
+                //builds the node data
+                var curNode = allNodesInScene[i];
+                var theNodeData = curNode.SetupNodeData(allNodesInScene);
+                TheWeb.SetupWebNodeList(ref theNodeData);
+            }
+            //nodes are all now connected on the runtime but not the data model under the TheWeb
+            for(int i=0;i<allNodesInScene.Count;i++)
+            {
+                //foreach connection on the node we need it and the connection and that needs to be passed to the TheWeb
+                //var aRunTime = allNodesInScene[i].SharpData;
+                var aRuntime = allNodesInScene[i];
+                //each connector node
+                for(int j=0;j<aRuntime.ConnectedNodes.Count;j++)
+                {
+                    var bNode = aRuntime.ConnectedNodes[j].SharpData;
+                    var aNode = aRuntime.SharpData;
+                    var goodConnection = TheWeb.CreateConnection(ref aNode,ref bNode);
+                    Debug.Log($"Connection {aNode} to {bNode} was connected?: {goodConnection.Item1}, reason? {goodConnection.Item2}");
+                }
+            }
             
         }
         //build all the nodes in the graph
         //connect all the nodes in the graph
         //set the starting node
-        protected override void SetupEntryPoint(SOSGraphNodeDataEx data)
+        protected override void SetupEntryPoint(NodeDataSOBEx data)
         {
             
             var currentState = data.StartingState;
@@ -66,24 +102,52 @@ namespace FuzzPhyte.SGraph.Samples
             // Build Out Lookup Dictionary by the NodeData
             if (unityNodes == null)
             {
-                unityNodes = new Dictionary<SOSGraphNodeDataEx, GameObject>();
+                unityNodes = new Dictionary<NodeDataSOBEx, NodeMBEx>();
             }
             // Clear the current nodes
             unityNodes.Clear();
-
+            //data nodes
+            if(dataNodes == null)
+            {
+                dataNodes = new List<NodeDataSOBEx>();
+            }
+            for(int i=0;i<allNodesInScene.Count;i++)
+            {
+                dataNodes.Add(allNodesInScene[i].NodeDataGen);
+            }
             //get a list of gameObjects by the component type SGraphGoNode base
-            var goNodes = FindObjectsOfType(typeof(NodeMBEx));
+            var goNodes = FindObjectsOfType(typeof(NodeMBEx)).ToList();
+            allNodesInScene = goNodes.Cast<NodeMBEx>().ToList();
             // Update with new nodes
             for(int i=0;i<DataNodes.Count;i++)
             {
                 var aDataNode = DataNodes[i];
-                for(int j=0;j<goNodes.Length;j++){
+                for(int j=0;j<goNodes.Count;j++){
                     var goNode = goNodes[j] as NodeMBEx;
                     if(goNode.NodeDataTemplate == aDataNode){
-                        unityNodes.Add(aDataNode,goNode.gameObject);
+                        unityNodes.Add(aDataNode,goNode);
+                        break;
                     }
                 }
             }
+        }
+
+        public override GameObject ReturnNodeByData(NodeDataSOBEx data, out bool foundMatch)
+        {
+            if (unityNodes.ContainsKey(data))
+            {
+                foundMatch = true;
+                return unityNodes[data].gameObject;
+            }
+            foundMatch = false;
+            return null;
+        }
+
+        public override UnityEvent ReturnUnityEventFromDataAction(Action action)
+        {
+            UnityEvent unityEvent = new UnityEvent();
+            unityEvent.AddListener(() => { action(); });
+            return unityEvent;
         }
     }
 }

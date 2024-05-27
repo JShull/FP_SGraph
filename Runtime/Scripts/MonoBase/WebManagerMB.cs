@@ -11,44 +11,10 @@ namespace FuzzPhyte.SGraph
     //R is the requirement data which can be whatever you need it to be
     public abstract class WebManagerMB<T,R,M> : MonoBehaviour where T : struct where R: struct
     {
-        public List<M> DataNodes;
-
-        public WebSB<T,R> TheWeb;
-        /// <summary>
-        // dictionary of the in scene unity nodes with their data class as the key
-        /// </summary>
-        protected Dictionary<M, GameObject> unityNodes;
-
-        public Dictionary<M, GameObject> UnityNodes
-        {
-            get
-            {
-                return unityNodes;
-            }
-            set
-            {
-                unityNodes = value;
-            }
-        }
-
+        public abstract List<M> DataNodes {get;set;}
         protected abstract void SetupEntryPoint(M data);
-
-        public virtual GameObject ReturnNodeByData(M data, out bool foundMatch)
-        {
-            if (unityNodes.ContainsKey(data))
-            {
-                foundMatch = true;
-                return unityNodes[data];
-            }
-            foundMatch = false;
-            return null;
-        }
-        protected UnityEvent ReturnUnityEventFromDataAction(System.Action action)
-        {
-            UnityEvent unityEvent = new UnityEvent();
-            unityEvent.AddListener(() => { action(); });
-            return unityEvent;
-        }
+        public abstract GameObject ReturnNodeByData(M data, out bool foundMatch);
+        public abstract UnityEvent ReturnUnityEventFromDataAction(System.Action action);
         
     }
 }

@@ -1,7 +1,6 @@
 namespace FuzzPhyte.SGraph
 {
     using FuzzPhyte.Utility;
-    using System;
     using System.Collections.Generic;
     using UnityEngine;
     /// <summary>
@@ -13,7 +12,7 @@ namespace FuzzPhyte.SGraph
         public SequenceStatus StartState;
         public abstract NodeSB<T,R> NodeSharp { get; set; }
         public abstract NodeSOB<T, R> NodeDataTemplate { get; set; }
-        public List<T> EventsByType;
+        public abstract List<T> EventsByType {get;set;}
         public abstract List<UNodeMB<T, R>> UnityOutConnections { get; set; }
         
         /// <summary>
@@ -21,6 +20,6 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         /// <param name="requirements"></param>
         /// <param name="transitions"></param>
-        public abstract void BuildRuntimeNode(List<R>requirements, List<T>transitions);
+        //public abstract void BuildRuntimeNode(List<R>requirements, List<T>transitions);
     }
 }

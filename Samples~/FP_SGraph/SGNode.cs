@@ -8,25 +8,40 @@ using System.Collections.Generic;
 //main sample class
     public class SGNode : NodeSB<TransitionD, RequirementD>
     {
-        public new Dictionary<string, SGNode> Connections;
+        public Dictionary<string, SGNode> Connections;
+        public SGStateMachine SGStateMachine;
         private SequenceStatus startState;
         public SequenceStatus StartState { get { return startState; } set { startState = value; } }
-        public SGNode(string id, SequenceStatus startState):base(id)
-        {
-            this.startState = startState;
-        }
-        public SGNode(string id) : base(id)
-        {
-        }
-        public SGNode(string id, List<RequirementD> requirements) : base(id, requirements)
-        {
-            
-        }
-        public SGNode(string id, List<RequirementD> requirements, List<TransitionD> transitions):base(id,requirements,transitions)
-        {
 
-        }
+        private string nodeID;
+        public override string SGNodeID { get => nodeID; set => nodeID=value; }
+        public override bool IsHeadNode { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
 
+        //public override StateMachineSB<RequirementD> SGStateMachine { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+
+        public SGNode(string id)
+        {
+            SetupNode(id);
+        }
+        
+        public override StateMachineSB<RequirementD> ReturnStateMachine()
+        {
+            return SGStateMachine;
+        }
+        public override void SetupNode(string id)
+        {
+            SGNodeID = id;
+        }
+        public override void SetupNode(string id, List<RequirementD> requirements)
+        {
+            SGNodeID = id;
+            SetupStateMachine(requirements);
+        }
+        public override void SetupNode(string id, List<RequirementD> requirements, List<TransitionD> transitions)
+        {
+            SGNodeID = id;
+            SetupStateMachine(requirements, transitions);
+        }
         public override void SetupStateMachine(List<RequirementD> Requirements)
         {
             SGStateMachine = new SGStateMachine(Requirements);
@@ -53,5 +68,21 @@ using System.Collections.Generic;
                 }
             }
         }
+        public void BuildConnectionDictionaryList()
+        {
+            Connections = new Dictionary<string, SGNode>();
+        }
+
+        public override bool RequirementsMet()
+        {
+            if (SGStateMachine == null)
+            {
+                //never had a statemachine setup so we have no requirements to meet... true/false?
+                return true;
+            }
+            return SGStateMachine.MeetsRequirements(); 
+            
+        }
+       
     }
 }

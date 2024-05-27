@@ -10,63 +10,75 @@ namespace FuzzPhyte.SGraph.Samples
     public class NodeMBEx : UNodeMB<TransitionD,RequirementD>
     {
         public SGNode SharpData;
-        public SOSGraphNodeDataEx NodeDataGen;
+        public NodeDataSOBEx NodeDataGen;
         public List<NodeMBEx> ConnectedNodes = new List<NodeMBEx>();
+        public List<TransitionD> EventsByTransitions = new List<TransitionD>();
 
         [Header("Backup Data")]
         public TextAsset JSONData;
 
         public override NodeSB<TransitionD, RequirementD> NodeSharp { get { return SharpData; } set { SharpData = (SGNode)value; } }
-        public override NodeSOB<TransitionD, RequirementD> NodeDataTemplate { get => NodeDataGen; set { NodeDataGen = (SOSGraphNodeDataEx)value; } }
+        public override NodeSOB<TransitionD, RequirementD> NodeDataTemplate { get => NodeDataGen; set { NodeDataGen = (NodeDataSOBEx)value; } }
         public override List<UNodeMB<TransitionD,RequirementD>> UnityOutConnections { get=>ConnectedNodes.Cast<UNodeMB<TransitionD,RequirementD>>().ToList(); set { ConnectedNodes = value.Cast<NodeMBEx>().ToList(); } }
 
+        public override List<TransitionD> EventsByType { get => EventsByTransitions; set {EventsByTransitions=value;} }
+
         /// <summary>
-        /// Humble Setup
-        /// Build out our internal C# runtime data
-        /// Mix of Unity and C# data
+        // Probably called from the Manager Class
         /// </summary>
-        /// <param name="shellRequirements"></param>
-        /// <returns></returns>
-        public override void BuildRuntimeNode(List<RequirementD>shellRequirements, List<TransitionD>interiorTransitions)
+        public SGNode SetupNodeData(List<NodeMBEx> allNodesInScene)
         {
+            var reqList = NodeDataTemplate.Requirements;
+            List<TransitionD> transList = new List<TransitionD>();
+            for(int i=0;i<EventsByType.Count;i++)
+            {
+                var newTransition = new TransitionD(){
+                    Transition = EventsByType[i].Transition,
+                    OutcomeStatus = EventsByType[i].OutcomeStatus,
+                    UnityActionEvents = EventsByType[i].UnityActionEvents
+                };
+                transList.Add(newTransition);
+            }
+            //this.BuildRuntimeNode(reqList, transList);
             //new runtime data node
-            SharpData = new SGNode(this.gameObject.GetInstanceID().ToString());
+            if(SharpData==null)
+            {
+                SharpData = new SGNode(this.gameObject.GetInstanceID().ToString());
+            }
+            
             //starting state from TemplateData
             //var curData = NodeDataTemplate as SOSGraphNodeDataEx;
             //var curNodeSharp = NodeSharp as SGNode;
             SharpData.StartState = NodeDataGen.StartingState;
-            SharpData.SetupStateMachine(shellRequirements, interiorTransitions);
-            //cast list as SGNode
-            //NodeSharp.BuildConnectionDictionaryList(externalConnections.OfType<SGNode>().ToList());
-            //go through my NodeDataTemplate - find the StateTransitions and match them with my EventsByType
-            //if they match, add the event to the NodeDataTemplate
-            /*
-            for (int i = 0; i < NodeDataTemplate.StateTransitions.Count; i++)
+            SharpData.SetupStateMachine(reqList, transList);
+            //initialize the Connections Dictionary
+            SharpData.BuildConnectionDictionaryList();
+            //check our ScriptableObject data and our Connection data to make sure they are the same Count
+            if(ConnectedNodes.Count != NodeDataTemplate.Connections.Count)
             {
-                var curStateTransition = NodeDataTemplate.StateTransitions[i];
-                for (int j = 0; j < EventsByType.Count; j++)
+                Debug.LogWarning($"Connected Nodes Count does not match the NodeDataGen Connected Nodes Count");
+                //fixing this
+                ConnectedNodes.Clear();
+                for(int i=0;i<NodeDataTemplate.Connections.Count;i++)
                 {
-                    List<UnityEvent> listByTransition = EventsByType[j].UnityActionEvents;
-                    if (NodeDataTemplate.StateTransitions[i].Transition == EventsByType[j].Transition)
-                    {
-                        //need to modify and replace the unity events from the EventsByType[j] with the ones in the NodeDataTemplate
-                        
-                        for(int k = 0; k < listByTransition.Count; k++)
-                        {
-                            //copy it manually
-                            curStateTransition.UnityActionEvents.Add(listByTransition[k]);
-                        }
-                        Debug.Log($"Added Event List for transition [{curStateTransition.Transition}] that had {listByTransition.Count} events in the Unity events list");
-                    }
+                    ConnectedNodes.Add(allNodesInScene.Find(x=>x.NodeDataGen == NodeDataTemplate.Connections[i]));
                 }
             }
-            */
-            //NodeSharp.Connections
-            //
-            
-            //
-            //return NodeDataTemplate;
+            return SharpData;
         }
+        /// <summary>
+        // Setup the bare bones of the data for the nodeID by GameObject Instance ID
+        /// </summary>
+        /// <returns></returns>
+        public SGNode InitialSetup()
+        {
+            if(SharpData==null)
+            {
+                SharpData = new SGNode(this.gameObject.GetInstanceID().ToString());
+            }
+            return SharpData;
+        }
+        
         /// <summary>
         /// Called from the Editor Script
         /// </summary>
