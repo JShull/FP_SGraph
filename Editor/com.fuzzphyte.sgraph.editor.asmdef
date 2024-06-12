@@ -2,11 +2,10 @@
     "name": "com.fuzzphyte.sgraph.editor",
     "rootNamespace": "FuzzPhyte.SGraph.Editor",
     "references": [
-        "GUID:0452c3a290873bf4db16d7c30a9a5432",
-        "GUID:99155d6a15bc77847863032d53546636",
-        "GUID:b2274f1409ce26f40919f89f9d4f667c",
-        "GUID:d8b63aba1907145bea998dd612889d6b",
-        "GUID:8729f3cadef284ac4bc6fd994d431e7a"
+        "com.fuzzphyte.sgraph",
+        "Unity.Mathematics",
+        "com.fuzzphyte.utility",
+        "com.fuzzphyte.utility.editor"
     ],
     "includePlatforms": [
         "Editor"
