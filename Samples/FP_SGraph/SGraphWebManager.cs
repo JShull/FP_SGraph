@@ -2,7 +2,6 @@ namespace FuzzPhyte.SGraph.Samples
 {
     using System.Collections.Generic;
     using UnityEngine;
-    using FuzzPhyte.Utility;
     using System;
     using System.Linq;
     using UnityEngine.Events;
@@ -106,17 +105,23 @@ namespace FuzzPhyte.SGraph.Samples
             }
             // Clear the current nodes
             unityNodes.Clear();
-            //data nodes
+            // data nodes
             if(dataNodes == null)
             {
                 dataNodes = new List<NodeDataSOBEx>();
             }
+            //clear data nodes?
+            dataNodes.Clear();
             for(int i=0;i<allNodesInScene.Count;i++)
             {
                 dataNodes.Add(allNodesInScene[i].NodeDataGen);
             }
             //get a list of gameObjects by the component type SGraphGoNode base
             var goNodes = FindObjectsOfType(typeof(NodeMBEx)).ToList();
+            Debug.LogWarning($"All Nodes in Scene Size = {allNodesInScene.Count}");
+            Debug.LogWarning($"GoNodes Size = {goNodes.Count}");
+            Debug.LogWarning($"Unity Node Size = {unityNodes.Count}");
+            Debug.LogWarning($"DataNodes Size = {dataNodes.Count}");
             allNodesInScene = goNodes.Cast<NodeMBEx>().ToList();
             // Update with new nodes
             for(int i=0;i<DataNodes.Count;i++)

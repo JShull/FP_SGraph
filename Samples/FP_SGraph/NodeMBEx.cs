@@ -1,5 +1,6 @@
 namespace FuzzPhyte.SGraph.Samples
 {
+    using FuzzPhyte.Utility;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
@@ -119,7 +120,91 @@ namespace FuzzPhyte.SGraph.Samples
                 UnityEditor.EditorUtility.SetDirty(this);
             }
         }
-        #endif
+#endif
+        private void OnDrawGizmosSelected()
+        {
+#if UNITY_EDITOR
+            if(SharpData == null)
+            {
+                return;
+            }
+            Vector3 centerP = transform.position;
+            // List<Vector3> endPoints = new List<Vector3>();
+
+            Color curColor = FP_UtilityData.ReturnColorByStatus(SharpData.StartState);
+            for (int i = 0; i < ConnectedNodes.Count; i++)
+            {
+                if (ConnectedNodes[i] != null)
+                {
+                    Vector3 nextS = ConnectedNodes[i].transform.position;
+                    Vector3 startTan = new Vector3(centerP.x, centerP.y + 1 + (i * 2f), centerP.z);
+
+                    Vector3 forwardV = (nextS - startTan).normalized;
+                    UnityEditor.Handles.DrawBezier(centerP, nextS - (forwardV * 0.25f), startTan, nextS, curColor, null, 2f);
+
+                    UnityEditor.Handles.color = curColor;
+                    UnityEditor.Handles.ConeHandleCap(0, nextS - (forwardV * 0.25f), Quaternion.LookRotation(forwardV), 0.25f, EventType.Repaint);
+                }
+            }
+            
+            for (int j = 0; j < NodeDataGen.Requirements.Count; j++)
+            {
+                
+                if (NodeDataGen.Requirements[j].RequirementTag != null)
+                {
+                    if (ConnectedNodes[j] != null)
+                    {
+                        Vector3 nextS = ConnectedNodes[j].transform.position;
+                        //endPoints.Add(nextS);
+                        Vector3 startTan = new Vector3(centerP.x, centerP.y + 1 + (j * 2f), centerP.z);
+
+                        Vector3 forwardV = (nextS - startTan).normalized;
+                        Color fromColor = FP_UtilityData.ReturnColorByStatus(SharpData.StartState);
+                        UnityEditor.Handles.DrawBezier(centerP, nextS - (forwardV * 0.25f), startTan, nextS, fromColor, null, 2f);
+
+                        UnityEditor.Handles.color = fromColor;
+                        UnityEditor.Handles.DrawSolidDisc(nextS - (forwardV * 0.25f), forwardV, 0.25f);
+                    }
+                    
+                }
+            }
+            
+#endif
+        }
+        /// <summary>
+        /// Help with debugging sequences
+        /// </summary>
+
+        private void OnDrawGizmos()
+        {
+#if UNITY_EDITOR
+            if (SharpData == null)
+            {
+                //Gizmos.DrawIcon()
+                Gizmos.DrawIcon(transform.position, "/FP/Chain/error.jpg", true);
+                return;
+            }
+            switch (SharpData.StartState)
+            {
+                case SequenceStatus.None:
+                    Gizmos.DrawIcon(transform.position, "/FP/Chain/NA.png", true);
+                    break;
+                case SequenceStatus.Locked:
+                    Gizmos.DrawIcon(transform.position, "/FP/Chain/locked.png", true);
+                    break;
+                case SequenceStatus.Unlocked:
+                    Gizmos.DrawIcon(transform.position, "/FP/Chain/unlocked.png", true);
+                    break;
+                case SequenceStatus.Active:
+                    Gizmos.DrawIcon(transform.position, "/FP/Chain/active.png", true);
+                    break;
+                case SequenceStatus.Finished:
+                    Gizmos.DrawIcon(transform.position, "/FP/Chain/finished.png", true);
+                    break;
+            }
+
+#endif
+        }
     }
 }
 
