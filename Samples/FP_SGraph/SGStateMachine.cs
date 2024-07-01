@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace FuzzPhyte.SGraph.Samples
 {
-    //Example of a state machine that uses string as the requirement type
+    //Example of a state machine using RequirementD as the requirement type
     public class SGStateMachine : StateMachineSB<RequirementD>
     {
         #region Constructors
