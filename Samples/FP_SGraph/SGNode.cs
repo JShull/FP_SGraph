@@ -1,9 +1,7 @@
 namespace FuzzPhyte.SGraph.Samples
 {
     using FuzzPhyte.Utility;
-    using PlasticPipe.PlasticProtocol.Messages;
-    using System.Collections;
-using System.Collections.Generic;
+    using System.Collections.Generic;
 
 //main sample class
     public class SGNode : NodeSB<TransitionD, RequirementD>
