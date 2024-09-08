@@ -1,8 +1,6 @@
 namespace FuzzPhyte.SGraph
 {
-    using System;
     using System.Collections.Generic;
-    using UnityEditorInternal;
 
     // main abstract class for the C# side of the nodes
     public abstract class NodeSB<T, R> where T : struct where R : struct
