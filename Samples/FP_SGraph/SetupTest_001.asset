@@ -46,4 +46,4 @@ MonoBehaviour:
     RequirementName: Ann
     RequirementMet: 1
   IsStartNode: 1
-  StartingState: 1
+  StartingState: 4

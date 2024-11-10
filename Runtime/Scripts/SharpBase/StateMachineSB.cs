@@ -145,6 +145,41 @@ namespace FuzzPhyte.SGraph
         }
         #endregion
         /// <summary>
+        /// Public accessor to attempt to try a transition
+        /// if there are any unlock requirements we will return false
+        /// use the other method to pass in requirements
+        /// </summary>
+        /// <param name="transition"></param>
+        public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition)
+        {
+            if(unlockRequirements.Count>0)
+            {
+                return (false,CurrentState);
+            }
+            var transitionOutcome= InternalTransition(transition);
+            if (transitionOutcome.Item1)
+            {
+                //we successfully transitioned need to activate our Delegate events
+                switch (CurrentState)
+                {
+                    case SequenceStatus.Finished:
+                        FinishEvent();
+                        break;
+                    case SequenceStatus.Unlocked:
+                        UnlockEvent();
+                        break;
+                    case SequenceStatus.Locked:
+                        LockEvent();
+                        break;
+                    case SequenceStatus.Active:
+                        ActiveEvent();
+                        break;
+                }
+                return (true, CurrentState);
+            }
+            return (false,CurrentState);
+        }
+        /// <summary>
         /// Public accessor to attempt at trying to transition the state
         /// If we are successful this function will manage the firing of the delegate events
         /// </summary>
@@ -156,6 +191,7 @@ namespace FuzzPhyte.SGraph
             {
                 return (false,CurrentState);
             }
+            //this logic is also in the other function
             var transitionOutcome= InternalTransition(transition);
             if (transitionOutcome.Item1)
             {
