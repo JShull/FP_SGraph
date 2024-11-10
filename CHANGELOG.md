@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-11-10
+
+- [@JShull](https://github.com/jshull).
+  - Updated Simple Setup
+  - New Helper Configuration Added in
+  - Extended FP_Data for a Threshold Configuration
+  - Extended FP_Timer to have a 'Helper Timer'
+    - This uses passed information by category and sequence state outcome to build a key
+    - Threshold time and a max amount since last event is now managed
+    - Still on the user in the configuration to add these in by the FPEventMono.cs in the editor
+
+### 0.2.0 Added
+
+- [@JShull](https://github.com/jshull).
+  - FPEventMono.cs
+  - FPEVManager.cs
+  - FPHelperTimer.cs
+  - FPMonoEvent.cs
+  - HelperThresholdConfig.cs
+
 ## [0.1.0] - 2024-02-17
 
 ### 0.1.0 Added

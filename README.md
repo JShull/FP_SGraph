@@ -2,11 +2,11 @@
 
 ## SGraph
 
-An early prototype graph system for node/links and possible outcomes/events driven by scriptable object data. Designed to work with Unity3D.
+An early prototype graph system for node/links and possible outcomes/events driven by scriptable object data. Designed to work with Unity3D - this isn't working as intended but has been turned into something much more linear.
 
 ## Setup & Design
 
-More information coming soon!
+See the updated ChangeLog for 0.2.0 as there is a simplified version that is just event driven and internalized state machine with a helper configuration/timer built in. This should be enough of branch of a graph to get going for the time being.
 
 ### Software Architecture
 

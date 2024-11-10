@@ -1,6 +1,6 @@
 {
     "name": "com.fuzzphyte.sgraph",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "displayName": "FP SGraph",
     "description": "FP SGraph is a node-link system with events driven by data from scriptable objects. A Graph is just a linked list of nodes and edges, this also has a web which manages all graphs by web",
     "unity": "2022.3",

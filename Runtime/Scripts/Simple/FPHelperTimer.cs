@@ -1,13 +1,18 @@
-using System;
-using FuzzPhyte.Utility;
-using UnityEngine;
-
 namespace FuzzPhyte.SGraph
 {
+    using System;
+    using FuzzPhyte.Utility;
+    using UnityEngine;
+    using System.Collections.Generic;
     public class FPHelperTimer : MonoBehaviour,IFPTimer<EventHelperData>
     {
+        #region Helper Configuration
+        [SerializeField]
+        private HelperThresholdConfig helperThresholdConfig;
+        private Dictionary<(HelperCategory, SequenceStatus), float> triggerThresholds;
+        private Dictionary<(HelperCategory, SequenceStatus), float> lastTriggeredTimes = new Dictionary<(HelperCategory, SequenceStatus), float>();
+    #endregion
         protected PriorityQueue<EventHelperData> helpers = new PriorityQueue<EventHelperData>();
-
         protected static FPHelperTimer _instance;
         public static FPHelperTimer HelperTimer { get { return _instance; } }
         public virtual void Awake()
@@ -20,118 +25,128 @@ namespace FuzzPhyte.SGraph
             {
                 _instance = this;
             }
+            if (helperThresholdConfig != null)
+            {
+                triggerThresholds = helperThresholdConfig.ToDictionary();
+            }
+            else
+            {
+                Debug.LogError("No HelperThresholdConfig assigned to FPHelperTimer - you should assign one!");
+                triggerThresholds = new Dictionary<(HelperCategory, SequenceStatus), float>();
+            }
         }
         protected PriorityQueue<EventHelperData> helperTimers = new PriorityQueue<EventHelperData>();
+        
         protected virtual void Update()
         {
             while (helperTimers.Count > 0 && helperTimers.Peek().ActivationTime <= Time.time)
             {
-                EventHelperData timerData = helperTimers.Dequeue();
-                Debug.LogWarning($"Helper Timer Finished with Action: {timerData.onActivate.Method.Name}");
-                timerData.onActivate();
+                EventHelperData helperData = helperTimers.Dequeue();
+                var key = (helperData.Category, helperData.EventState.CurrentState);
+                //Smart Logic can Happen Here or when we call the StartTimer functions
+                //
+                // we can get our gameobject back from the FPEventState 
+                var gOthatStarted = helperData.EventState.UnityObject;
+                // Check if the state has changed
+                if (!helperData.IsHelperStateUnchanged())
+                {
+                    Debug.LogWarning("Helper timer cancelled due to state change.");
+                    continue;
+                }
+                // Check time since last trigger for this category and state
+                // Determine the threshold for this helper's category and state
+                float maxDelay = triggerThresholds.ContainsKey(key) ? triggerThresholds[key] : helperData.ActivationTime;
+
+                // Check if enough time has passed since the last trigger for this category and state
+                if (lastTriggeredTimes.TryGetValue(key, out float lastTime) && (Time.time - lastTime) < maxDelay)
+                {
+                    Debug.LogWarning("Helper not triggered: minimum time interval not met.");
+                    continue;
+                }
+
+                // Update last triggered time and run the helper
+                lastTriggeredTimes[key] = Time.time;
+                Debug.LogWarning($"Helper Timer Finished with Action: {helperData.onActivate.Method.Name}");
+                // logic needed
+                helperData.onActivate();
             }
+        }
+        public bool HasRecentlyTriggered((HelperCategory, SequenceStatus) key, float delay)
+        {
+            // Check if the last trigger time exists for this key
+            if (lastTriggeredTimes.TryGetValue(key, out float lastTime))
+            {
+                // If it exists, check if the time elapsed since last trigger is less than the delay
+                return (Time.time - lastTime) < delay;
+            }
+            // If no entry exists, it means this helper has never been triggered, so return false
+            return false;
         }
         public void StartTimer(float time, Action onFinish,HelperCategory category,FPEventState gObject)
         {
             var eventData = StartTimer(time, onFinish);
             eventData.Category = category;
-            eventData.EventState = gObject;
+            eventData.SetupEventState(gObject);
             helperTimers.Enqueue(eventData);
         }
         public void StartTimer(float time, int param,Action<int>onFinish,HelperCategory category,FPEventState gObject)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
-            eventData.EventState = gObject;
+            eventData.SetupEventState(gObject);
             helperTimers.Enqueue(eventData);
         }
         public void StartTimer(float time, float param,Action<float>onFinish,HelperCategory category,FPEventState gObject)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
-            eventData.EventState = gObject;
+            eventData.SetupEventState(gObject);
             helperTimers.Enqueue(eventData);
         }
         public void StartTimer(float time, string param, Action<string>onFinish,HelperCategory category,FPEventState gObject)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
-            eventData.EventState = gObject;
+            eventData.SetupEventState(gObject);
             helperTimers.Enqueue(eventData);
         }
         public void StartTimer(float time, FP_Data param, Action<FP_Data>onFinish,HelperCategory category,FPEventState gObject)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
-            eventData.EventState = gObject;
+            eventData.SetupEventState(gObject);
             helperTimers.Enqueue(eventData);
         }
         public void StartTimer(float time, GameObject param, Action<GameObject>onFinish,HelperCategory category,FPEventState gObject)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
-            eventData.EventState = gObject;
+            eventData.SetupEventState(gObject);
             helperTimers.Enqueue(eventData);
         }
         public EventHelperData StartTimer(float time, Action onFinish)
         {
-            EventHelperData helperData = new EventHelperData
-            {
-                ActivationTime = Time.time + time,
-                onActivate = onFinish
-            };
-            return helperData;
+            return  new EventHelperData(Time.time + time, onFinish);
         }
-        
-
         public EventHelperData StartTimer(float time, int param, Action<int> onFinish)
         {
-            EventHelperData helperData = new EventHelperData
-            {
-                ActivationTime = Time.time + time,
-                onActivate = () => onFinish(param)
-            };
-            return helperData;
+            return new EventHelperData(Time.time + time, () => onFinish(param));
         }
-
         public EventHelperData StartTimer(float time, float param, Action<float> onFinish)
         {
-            EventHelperData helperData = new EventHelperData
-            {
-                ActivationTime = Time.time + time,
-                onActivate = () => onFinish(param)
-            };
-            return helperData;
+            return new EventHelperData(Time.time + time, () => onFinish(param));
         }
-
         public EventHelperData StartTimer(float time, string param, Action<string> onFinish)
         {
-            EventHelperData helperData = new EventHelperData
-            {
-                ActivationTime = Time.time + time,
-                onActivate = () => onFinish(param)
-            };
-            return helperData;
+            return new EventHelperData(Time.time + time, () => onFinish(param));
         }
-
         public EventHelperData StartTimer(float time, FP_Data param, Action<FP_Data> onFinish)
         {
-            EventHelperData helperData = new EventHelperData
-            {
-                ActivationTime = Time.time + time,
-                onActivate = () => onFinish(param)
-            };
-            return helperData;
+            return new EventHelperData(Time.time + time, () => onFinish(param)); 
         }
-
         public EventHelperData StartTimer(float time, GameObject param, Action<GameObject> onFinish)
         {
-            EventHelperData helperData = new EventHelperData
-            {
-                ActivationTime = Time.time + time,
-                onActivate = () => onFinish(param)
-            };
-            return helperData;
+            return new EventHelperData(Time.time + time, () => onFinish(param));
         }
     }
 }

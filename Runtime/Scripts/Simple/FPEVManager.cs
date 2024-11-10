@@ -5,11 +5,27 @@ namespace FuzzPhyte.SGraph
     using UnityEngine;
     using FuzzPhyte.Utility;
     using System;
+    using UnityEngine.Events;
+
     [Serializable]
     public struct FPTransitionMapper
     {
         public SequenceTransition TransitionKey;
         public SequenceStatus Outcome;
+        public FPHelperMapper HelperLogic;
+    }
+    [Serializable]
+    public struct FPHelperMapper
+    {
+        public bool UseHelper;
+        public HelperCategory HelperType;
+        
+        public float TimeUntil;
+        public UnityEvent TheHelperAction;
+        public void ActivateAction()
+        {
+            TheHelperAction.Invoke();
+        }
     }
     public class FPEVManager : MonoBehaviour
     {
@@ -30,14 +46,9 @@ namespace FuzzPhyte.SGraph
             
         }
 
-        private void Update()
+        protected virtual void Update()
         {
-            /*
-            foreach (var eventState in eventStates)
-            {
-                eventState.UpdateState();
-            }
-            */
+            
         }
         public void TriggerEventTransition(FPMonoEvent theEventKey, SequenceTransition transition, List<RequirementD> requirementValue)
         {
