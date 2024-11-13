@@ -5,12 +5,7 @@ namespace FuzzPhyte.SGraph.Editor
     using FuzzPhyte.SGraph;
     using FuzzPhyte.Utility.Editor;
     using FuzzPhyte.SGraph.Samples;
-    using System.IO;
-    using System;
-    using UnityEngine.SceneManagement;
-    using FuzzPhyte.Utility.Meta;
-    using Unity.Serialization.Json;
-    using System.Text;
+
     using SGUtility = FP_SGraphUtility<TransitionD, RequirementD>;
     [CustomEditor(typeof(NodeMBEx))]
     public class NodeMBExEditor : Editor

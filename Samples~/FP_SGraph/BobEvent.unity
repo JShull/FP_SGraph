@@ -532,8 +532,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2efbfc3847ca04756aeea892a3c672de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  helperThresholdConfig: {fileID: 11400000, guid: 291e80f539d19460cb17824f2c88aedd,
-    type: 2}
+  helperThresholdConfig: {fileID: 11400000, guid: 291e80f539d19460cb17824f2c88aedd, type: 2}
 --- !u!1 &1307355474
 GameObject:
   m_ObjectHideFlags: 0
