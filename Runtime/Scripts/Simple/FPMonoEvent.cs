@@ -2,7 +2,6 @@ namespace FuzzPhyte.SGraph
 {   
     using System.Collections.Generic;
     using FuzzPhyte.Utility;
-    using UnityEditor.EditorTools;
     using UnityEngine;
     using UnityEngine.Events;
 
