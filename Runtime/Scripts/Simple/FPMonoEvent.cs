@@ -5,7 +5,6 @@ namespace FuzzPhyte.SGraph
     using UnityEngine;
     using UnityEngine.Events;
 
-    
     /// <summary>
     /// GameObject to build out an FPEventState
     /// </summary>
@@ -32,8 +31,12 @@ namespace FuzzPhyte.SGraph
         protected Dictionary<SequenceStatus,FPHelperMapper> helpers = new Dictionary<SequenceStatus, FPHelperMapper>();
         [Tooltip("If we want to use the helpers we need a timer")]
         public FPHelperTimer HelperManager;
+        [SerializeField]
         protected FPEventState eventState;
-        protected void Awake()
+        [SerializeField]
+        protected string curStateName;
+        protected bool eventStateEst;
+        protected virtual void Awake()
         {
             for(int i=0;i<TransitionBuilder.Count;i++)
             {
@@ -49,7 +52,7 @@ namespace FuzzPhyte.SGraph
                 }
             }
         }
-        protected void Start()
+        protected virtual void Start()
         {
             eventState = new FPEventState(StartingState,TheEventRequirements,transitions,this.gameObject);
             TheEventManager.AddFPEventStateData(this,eventState);
@@ -58,8 +61,9 @@ namespace FuzzPhyte.SGraph
             eventState.OnActive += OnActiveMono;
             eventState.OnLocked += OnLockedMono;
             eventState.OnUnlocked += OnUnlockedMono;
+            eventStateEst = true;
         }
-        protected void Update()
+        protected virtual void Update()
         {
             if(!Testing)return;
 
@@ -71,6 +75,7 @@ namespace FuzzPhyte.SGraph
             {
                 TryTransition(TestTransition,TestRequirements);
             }
+            curStateName = eventState.CurrentState.ToString();
         }
         #region Transition Method Calls
         public virtual void TryTransition(SequenceTransition transition, List<RequirementD> requirementValue)
@@ -161,7 +166,7 @@ namespace FuzzPhyte.SGraph
                 // Only queue if the helper's last trigger time has exceeded the threshold or if it has never been triggered
                 if (!HelperManager.HasRecentlyTriggered(key, helperData.TimeUntil))
                 {
-                    HelperManager.StartTimer(helperData.TimeUntil, helperData.ActivateAction, helperData.HelperType, eventState);
+                    HelperManager.StartTimer(helperData.TimeUntil, helperData.ActivateAction, helperData.HelperType, eventState,helperData.UniqueHelperName);
                 }
             }
             /*
@@ -177,6 +182,116 @@ namespace FuzzPhyte.SGraph
             eventState.OnActive -= OnActiveMono;
             eventState.OnLocked -= OnLockedMono;
             eventState.OnUnlocked -= OnUnlockedMono;
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+#if UNITY_EDITOR
+            if (TheEventManager==null)
+            {
+                return;
+            }
+            Vector3 centerP = transform.position;
+            // List<Vector3> endPoints = new List<Vector3>();
+            Color curColor = Color.black;
+            if (eventStateEst)
+            {
+                curColor = FP_UtilityData.ReturnColorByStatus(eventState.CurrentState);
+            }
+
+            Vector3 nextS = TheEventManager.transform.position;
+            Vector3 startTan = new Vector3(centerP.x, centerP.y + 1, centerP.z);
+
+            Vector3 forwardV = (nextS - startTan).normalized;
+            UnityEditor.Handles.DrawBezier(centerP, nextS - (forwardV * 0.25f), startTan, nextS, curColor, null, 2f);
+
+            UnityEditor.Handles.color = curColor;
+            UnityEditor.Handles.ConeHandleCap(0, nextS - (forwardV * 0.25f), Quaternion.LookRotation(forwardV), 0.25f, EventType.Repaint);
+            
+            /*
+            for (int j = 0; j < TheEventRequirements.Count; j++)
+            {
+
+                if (TheEventRequirements[j].RequirementTag != null)
+                {
+                    if (ConnectedNodes[j] != null)
+                    {
+                        Vector3 nextS = ConnectedNodes[j].transform.position;
+                        //endPoints.Add(nextS);
+                        Vector3 startTan = new Vector3(centerP.x, centerP.y + 1 + (j * 2f), centerP.z);
+
+                        Vector3 forwardV = (nextS - startTan).normalized;
+                        Color fromColor = FP_UtilityData.ReturnColorByStatus(SharpData.StartState);
+                        UnityEditor.Handles.DrawBezier(centerP, nextS - (forwardV * 0.25f), startTan, nextS, fromColor, null, 2f);
+
+                        UnityEditor.Handles.color = fromColor;
+                        UnityEditor.Handles.DrawSolidDisc(nextS - (forwardV * 0.25f), forwardV, 0.25f);
+                    }
+
+                }
+            }
+            */
+
+#endif
+        }
+        /// <summary>
+        /// Help with debugging sequences
+        /// </summary>
+        private void OnDrawGizmos()
+        {
+#if UNITY_EDITOR
+            if (TheEventManager == null)
+            {
+                Gizmos.DrawIcon(transform.position, FP_UtilityData.ReturnIconAddressByStatus(SequenceStatus.NA), true);
+                return;
+            }
+            if (!eventStateEst)
+            {
+                Gizmos.DrawIcon(transform.position, FP_UtilityData.ReturnIconAddressByStatus(SequenceStatus.None), true);
+                return;
+            }
+            Gizmos.DrawIcon(transform.position, FP_UtilityData.ReturnIconAddressByStatus(eventState.CurrentState), true);
+            
+            //helper timer?
+            
+            //sequencestatus
+            string outcome = eventState.CurrentState.ToString();
+            if (helpers.ContainsKey(eventState.CurrentState))
+            {
+                var helperMap = helpers[eventState.CurrentState];
+                if (helperMap.UseHelper)
+                {
+                    //figure out time left?
+                    //HelperManager.StartTimer
+                    outcome = eventState.CurrentState.ToString() + " " + helperMap.UniqueHelperName;
+                    var dataReturn = HelperManager.ContainTimerByUniqueName(helperMap.UniqueHelperName);
+                    Vector3 labelPos = this.transform.position + new Vector3(0, .2f, 0);
+                    if (dataReturn.Item2 != null)
+                    {
+                        var helperRunning = HelperManager.TimerActiveByUniqueName(helperMap.UniqueHelperName);
+                        if (helperRunning.Item1)
+                        {
+                            float runTimeLeft = helperRunning.Item2.ActivationTime - Time.time;
+                            UnityEditor.Handles.Label(labelPos, outcome + " " + (runTimeLeft).ToString("0.00"));
+                            if (runTimeLeft < 0)
+                            {
+                                UnityEditor.Handles.Label(labelPos, outcome);
+                            }
+                        }
+                        else
+                        { 
+                            UnityEditor.Handles.Label(labelPos, outcome + " " + (dataReturn.Item2.ActivationTime).ToString("0.00"));
+                        }
+                        
+                    }
+                    else
+                    {
+                        UnityEditor.Handles.Label(labelPos, outcome);
+                    }
+                }
+            }
+            
+#endif
         }
     }
 }

@@ -7,6 +7,7 @@ namespace FuzzPhyte.SGraph
     using System;
     using UnityEngine.Events;
 
+    #region Data Items
     [Serializable]
     public struct FPTransitionMapper
     {
@@ -18,6 +19,7 @@ namespace FuzzPhyte.SGraph
     public struct FPHelperMapper
     {
         public bool UseHelper;
+        public string UniqueHelperName;
         public HelperCategory HelperType;
         
         public float TimeUntil;
@@ -27,15 +29,17 @@ namespace FuzzPhyte.SGraph
             TheHelperAction.Invoke();
         }
     }
+    #endregion
     public class FPEVManager : MonoBehaviour
     {
         public Dictionary<FPMonoEvent,FPEventState> eventStates;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             eventStates = new Dictionary<FPMonoEvent, FPEventState>();
         }
-        public void AddFPEventStateData(FPMonoEvent theKey,FPEventState eventState)
+        #region Standard Event Functions
+        public virtual void AddFPEventStateData(FPMonoEvent theKey,FPEventState eventState)
         {
             if(eventStates.ContainsKey(theKey))
             {
@@ -45,12 +49,18 @@ namespace FuzzPhyte.SGraph
             eventStates.Add(theKey,eventState);
             
         }
-
-        protected virtual void Update()
+        public virtual void DeleteFPEventStateData(FPMonoEvent theKey, FPEventState eventState)
         {
-            
+            if (eventStates.ContainsKey(theKey))
+            {
+                eventStates.Remove(theKey);
+            }
+            else
+            {
+                Debug.LogWarning($"Key,{theKey.name} doesn't exist in the dictionary");
+            }
         }
-        public void TriggerEventTransition(FPMonoEvent theEventKey, SequenceTransition transition, List<RequirementD> requirementValue)
+        public virtual void TriggerEventTransition(FPMonoEvent theEventKey, SequenceTransition transition, List<RequirementD> requirementValue)
         {
             if(!eventStates.ContainsKey(theEventKey))
             {
@@ -60,7 +70,7 @@ namespace FuzzPhyte.SGraph
             var returnValues = eventStates[theEventKey].TryTransition(transition, requirementValue);
             theEventKey.PassBackFromManager(returnValues.Item1,returnValues.Item2);
         }
-        public void TriggerEventTransition(FPMonoEvent theEventKey, SequenceTransition transition)
+        public virtual void TriggerEventTransition(FPMonoEvent theEventKey, SequenceTransition transition)
         {
             if(!eventStates.ContainsKey(theEventKey))
             {
@@ -69,7 +79,7 @@ namespace FuzzPhyte.SGraph
             }
             var returnValues = eventStates[theEventKey].TryTransition(transition);
             theEventKey.PassBackFromManager(returnValues.Item1,returnValues.Item2);
-
         }
+        #endregion
     }
 }

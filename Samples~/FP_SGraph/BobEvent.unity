@@ -292,6 +292,7 @@ MonoBehaviour:
     Outcome: 3
     HelperLogic:
       UseHelper: 1
+      UniqueHelperName: 
       HelperType: 2
       TimeUntil: 20
       TheHelperAction:
@@ -313,6 +314,7 @@ MonoBehaviour:
     Outcome: 4
     HelperLogic:
       UseHelper: 1
+      UniqueHelperName: 
       HelperType: 3
       TimeUntil: 30
       TheHelperAction:
@@ -334,6 +336,7 @@ MonoBehaviour:
     Outcome: 5
     HelperLogic:
       UseHelper: 0
+      UniqueHelperName: 
       HelperType: 0
       TimeUntil: 0
       TheHelperAction:
@@ -352,6 +355,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   HelperManager: {fileID: 1289486710}
+  curStateName: 
 --- !u!4 &750434780
 Transform:
   m_ObjectHideFlags: 0
@@ -361,7 +365,7 @@ Transform:
   m_GameObject: {fileID: 750434778}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

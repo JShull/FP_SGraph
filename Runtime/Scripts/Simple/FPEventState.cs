@@ -13,21 +13,37 @@ namespace FuzzPhyte.SGraph
         {
             UnityRuntimeObject = MonoOwner;
         }
-        public override bool UpdateUnlockCheckRequirementsList(List<RequirementD> parameters)
+        public override bool UpdateUnlockCheckRequirementsList(List<RequirementD> passedParameters)
         {
             if(unlockRequirements.Count == 0)
             {
                 return true;
             }
-            foreach (var requirement in unlockRequirements)
+            //
+            List<RequirementD> indexToRemove = new List<RequirementD>();
+            for(int i = 0; i < unlockRequirements.Count; i++)
             {
-                if (!parameters.Contains(requirement))
+                var currentUnlockReq = unlockRequirements[i];
+                for(int j = 0; j < passedParameters.Count; j++)
                 {
-                    return false;
+                    var passedParameterRequest = passedParameters[j];
+                    if(passedParameterRequest.RequirementMet && passedParameterRequest.RequirementName == currentUnlockReq.RequirementName)
+                    {
+                        indexToRemove.Add(currentUnlockReq);
+                    }
                 }
             }
-            unlockRequirements.Clear();
-            return true;
+            for(int a = 0; a < indexToRemove.Count; a++)
+            {
+                var index = indexToRemove[a];
+                unlockRequirements.Remove(index);
+            }
+            if (unlockRequirements.Count == 0)
+            {
+                unlockRequirements.Clear();
+                return true;
+            }
+            return false;
         }
 
         public virtual void Initialize()

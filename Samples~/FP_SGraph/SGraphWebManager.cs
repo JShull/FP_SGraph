@@ -24,7 +24,7 @@ namespace FuzzPhyte.SGraph.Samples
         //public override List<NodeDataSOBEx> DataNodes { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         // public override WebSB<TransitionD, RequirementD> TheWeb { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        private void Awake()
+        protected void Awake()
         {
             if(EntryNode != null)
             {
@@ -33,11 +33,11 @@ namespace FuzzPhyte.SGraph.Samples
             }
             
         }
-        private void OnEnable()
+        protected void OnEnable()
         {
             UpdateAllNodes();
         }
-        private void Start()
+        protected void Start()
         {
             //build out web data 
             if(EntryDataNode != null)
@@ -117,7 +117,8 @@ namespace FuzzPhyte.SGraph.Samples
                 dataNodes.Add(allNodesInScene[i].NodeDataGen);
             }
             //get a list of gameObjects by the component type SGraphGoNode base
-            var goNodes = FindObjectsOfType(typeof(NodeMBEx)).ToList();
+            var goNodes = FindObjectsByType<NodeMBEx>(FindObjectsSortMode.InstanceID).ToList();
+            //var goNodes = FindObjectsOfType(typeof(NodeMBEx)).ToList();
             Debug.LogWarning($"All Nodes in Scene Size = {allNodesInScene.Count}");
             Debug.LogWarning($"GoNodes Size = {goNodes.Count}");
             Debug.LogWarning($"Unity Node Size = {unityNodes.Count}");

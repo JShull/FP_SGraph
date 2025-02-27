@@ -11,6 +11,8 @@ namespace FuzzPhyte.SGraph
         private HelperThresholdConfig helperThresholdConfig;
         private Dictionary<(HelperCategory, SequenceStatus), float> triggerThresholds;
         private Dictionary<(HelperCategory, SequenceStatus), float> lastTriggeredTimes = new Dictionary<(HelperCategory, SequenceStatus), float>();
+        private Dictionary<string, EventHelperData> pastHelperEventData = new Dictionary<string, EventHelperData>();
+        protected uint runningHelperIndex=0;
     #endregion
         protected PriorityQueue<EventHelperData> helpers = new PriorityQueue<EventHelperData>();
         protected static FPHelperTimer _instance;
@@ -82,47 +84,99 @@ namespace FuzzPhyte.SGraph
             // If no entry exists, it means this helper has never been triggered, so return false
             return false;
         }
-        public void StartTimer(float time, Action onFinish,HelperCategory category,FPEventState gObject)
+        public void StartTimer(float time, Action onFinish,HelperCategory category,FPEventState gObject, string uniqueName="null")
         {
             var eventData = StartTimer(time, onFinish);
             eventData.Category = category;
             eventData.SetupEventState(gObject);
+            if (uniqueName != "null")
+            {
+                pastHelperEventData.Add(uniqueName, eventData);
+            }
             helperTimers.Enqueue(eventData);
+            runningHelperIndex++;
         }
-        public void StartTimer(float time, int param,Action<int>onFinish,HelperCategory category,FPEventState gObject)
+        public void StartTimer(float time, int param,Action<int>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
             eventData.SetupEventState(gObject);
+            if (uniqueName != "null")
+            {
+                pastHelperEventData.Add(uniqueName, eventData);
+            }
             helperTimers.Enqueue(eventData);
+            runningHelperIndex++;
         }
-        public void StartTimer(float time, float param,Action<float>onFinish,HelperCategory category,FPEventState gObject)
+        public void StartTimer(float time, float param,Action<float>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
             eventData.SetupEventState(gObject);
+            if (uniqueName != "null")
+            {
+                pastHelperEventData.Add(uniqueName, eventData);
+            }
             helperTimers.Enqueue(eventData);
+            runningHelperIndex++;
         }
-        public void StartTimer(float time, string param, Action<string>onFinish,HelperCategory category,FPEventState gObject)
+        public void StartTimer(float time, string param, Action<string>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
             eventData.SetupEventState(gObject);
+            if (uniqueName != "null")
+            {
+                pastHelperEventData.Add(uniqueName, eventData);
+            }
             helperTimers.Enqueue(eventData);
+            runningHelperIndex++;
         }
-        public void StartTimer(float time, FP_Data param, Action<FP_Data>onFinish,HelperCategory category,FPEventState gObject)
+        public void StartTimer(float time, FP_Data param, Action<FP_Data>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
             eventData.SetupEventState(gObject);
+            if (uniqueName != "null")
+            {
+                pastHelperEventData.Add(uniqueName, eventData);
+            }
             helperTimers.Enqueue(eventData);
+            runningHelperIndex++;
         }
-        public void StartTimer(float time, GameObject param, Action<GameObject>onFinish,HelperCategory category,FPEventState gObject)
+        public void StartTimer(float time, GameObject param, Action<GameObject>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
             eventData.SetupEventState(gObject);
+            if (uniqueName != "null")
+            {
+                pastHelperEventData.Add(uniqueName, eventData);
+            }
             helperTimers.Enqueue(eventData);
+            runningHelperIndex++;
+        }
+        
+        public (bool,EventHelperData) ContainTimerByUniqueName(string helperName)
+        {
+            if (pastHelperEventData.ContainsKey(helperName))
+            {
+                var data = pastHelperEventData[helperName];
+                return (helperTimers.Contains(data),data);
+            }
+            return (false,null);
+        }
+        public (bool,EventHelperData) TimerActiveByUniqueName(string helperName)
+        {
+            if (pastHelperEventData.ContainsKey(helperName))
+            {
+                var data = pastHelperEventData[helperName];
+                if (helperTimers.Contains(data))
+                {
+                    return (helperTimers.IsActive(data),data);
+                }
+            }
+            return (false,null);
         }
         public EventHelperData StartTimer(float time, Action onFinish)
         {

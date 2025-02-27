@@ -151,13 +151,13 @@ MonoBehaviour:
   StartWebOnPlay: 1
   EntryNode: {fileID: 1659993767}
   allNodesInScene:
-  - {fileID: 1659993767}
   - {fileID: 874219776}
   - {fileID: 1437442647}
+  - {fileID: 1659993767}
   dataNodes:
+  - {fileID: 11400000, guid: cc9850eee292cfd408815d25f31d1e1b, type: 2}
   - {fileID: 11400000, guid: bb6bb93e0f1b04eb6851aa2c082d1aae, type: 2}
   - {fileID: 11400000, guid: 015fea063bc8b49cb9e01c73037d218b, type: 2}
-  - {fileID: 11400000, guid: cc9850eee292cfd408815d25f31d1e1b, type: 2}
 --- !u!4 &513712251
 Transform:
   m_ObjectHideFlags: 0
@@ -587,7 +587,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb8271184042c2048a3fdbb58a6f0713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  StartState: 1
+  StartState: 4
   NodeDataGen: {fileID: 11400000, guid: cc9850eee292cfd408815d25f31d1e1b, type: 2}
   ConnectedNodes:
   - {fileID: 874219776}
