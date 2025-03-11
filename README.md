@@ -2,7 +2,7 @@
 
 ## SGraph
 
-An early prototype graph system for node/links and possible outcomes/events driven by scriptable object data. Designed to work with Unity3D - this isn't working as intended but has been turned into something much more linear.
+An early prototype graph system for node/links and possible outcomes/events driven by scriptable object data. Designed to work with Unity3D - this isn't working as intended but has been turned into something much more linear. Please see the SimpleExample.unity file in the samples that are part of the UPM. This sample demonstrates a helper logic function that loads information from a scriptable object to then go and find those runtime objects and update/invoke the logic from the scriptable object onto the runtime object.
 
 ## Setup & Design
 

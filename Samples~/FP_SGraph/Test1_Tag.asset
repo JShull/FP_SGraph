@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d848367dffc90fc4990972b0165ba0da, type: 3}
   m_Name: Test1_Tag
   m_EditorClassIdentifier: 
+  UniqueID: Test1_Tag_EventSamples
   TagName: Test1_Tag
   Description: Sample Tag 1

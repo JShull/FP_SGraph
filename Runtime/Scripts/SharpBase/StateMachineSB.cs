@@ -20,6 +20,7 @@ namespace FuzzPhyte.SGraph
         public event StateEventHandler OnUnlocked;
         public event StateEventHandler OnLocked;
         public event StateEventHandler OnActive;
+        protected bool runInitialStateSequence;
 
         #region Constructors
         public StateMachineSB(List<R>requirements)
@@ -145,6 +146,34 @@ namespace FuzzPhyte.SGraph
             OnActive?.Invoke(this);
         }
         #endregion
+        /// <summary>
+        /// This will only run once and is designed to be called upon initialization/setup
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool TryInvokeEventInitialization()
+        {
+            if (!runInitialStateSequence)
+            {
+
+                switch (CurrentState)
+                {
+                    case SequenceStatus.Finished:
+                        FinishEvent();
+                        break;
+                    case SequenceStatus.Unlocked:
+                        UnlockEvent();
+                        break;
+                    case SequenceStatus.Locked:
+                        LockEvent();
+                        break;
+                    case SequenceStatus.Active:
+                        ActiveEvent();
+                        break;
+                }
+                runInitialStateSequence = true;
+            }
+            return false;
+        }
         /// <summary>
         /// Public accessor to attempt to try a transition
         /// if there are any unlock requirements we will return false

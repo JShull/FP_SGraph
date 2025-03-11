@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-03-11
+
+### 0.3.0 Added
+
+- [@JShull](https://github.com/jshull).
+  - FPMonoEventTester.cs
+    - This separates the testing functions and parameters from the FPMonoEvent class
+
+### 0.3.0 Changed
+
+- [@JShull](https://github.com/jshull).
+  - StateMachineSB.cs
+    - Mechanism to Invoke on Event Init via 'TryInvokeEventInitialization()
+  - FPEVManager.cs
+    - Wrapper function and logic to allow for the Invoked Event based on starting state
+  - FPMonoEvent.cs
+    - Removed the logic, parameters, and functions tied to testing related needs into a new mono class FPMonoEventTester.cs
+
 ## [0.2.0] - 2024-11-10
 
 - [@JShull](https://github.com/jshull).

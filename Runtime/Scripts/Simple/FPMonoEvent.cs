@@ -1,9 +1,11 @@
 namespace FuzzPhyte.SGraph
 {   
     using System.Collections.Generic;
+    using System.Linq;
     using FuzzPhyte.Utility;
     using UnityEngine;
     using UnityEngine.Events;
+    using static UnityEngine.GraphicsBuffer;
 
     /// <summary>
     /// GameObject to build out an FPEventState
@@ -12,122 +14,209 @@ namespace FuzzPhyte.SGraph
     {
         public FPEVManager TheEventManager;
         public List<RequirementD> TheEventRequirements = new List<RequirementD>();
-        [Header("Testing Purposes")]
-        public List<RequirementD> TestRequirements = new List<RequirementD>();
-        public SequenceTransition TestTransition;
-        public bool Testing=true;
+        [Tooltip("This will run the first event action tied to the starting state")]
+        public bool ProcessEventActionsOnSetup;
         [Space]
         [Header("Transitions and Stuff")]
         public SequenceStatus StartingState = SequenceStatus.Locked;
         public List<FPTransitionMapper> TransitionBuilder = new List<FPTransitionMapper>();
-        //public List<HelperCategory>
+
+        
         [Space]
         [Header("Event Actions")]
-        public UnityEvent OnFinishEvent;
-        public UnityEvent OnActiveEvent;
         public UnityEvent OnLockedEvent;
         public UnityEvent OnUnlockedEvent;
+        public UnityEvent OnActiveEvent;
+        public UnityEvent OnFinishEvent;
         protected Dictionary<SequenceTransition, SequenceStatus> transitions = new Dictionary<SequenceTransition, SequenceStatus>();
         protected Dictionary<SequenceStatus,FPHelperMapper> helpers = new Dictionary<SequenceStatus, FPHelperMapper>();
         [Tooltip("If we want to use the helpers we need a timer")]
         public FPHelperTimer HelperManager;
         [SerializeField]
         protected FPEventState eventState;
-        [SerializeField]
-        protected string curStateName;
+        
+        public FPEventState EventState
+        {
+            get { return eventState; }
+        }
         protected bool eventStateEst;
         protected virtual void Awake()
         {
-            for(int i=0;i<TransitionBuilder.Count;i++)
+        }
+        protected virtual void Start()
+        {
+        }
+        #region Event Setup Functions
+        /// <summary>
+        /// Process This First if we need to via external request
+        /// If you pass null in the transitionMapper it won't use any data you pass it
+        /// If you pass nothing to it, it will use the data on the Mono Behavior in the Editor to do it's thing and set itself up
+        /// </summary>
+        /// <param name="passedStartingState">The starting state</param>
+        /// <param name="passedTransitionData"></param>
+        public virtual void DataResolveAndActivate(SequenceStatus passedStartingState = SequenceStatus.Locked,List<FPTransitionMapper> passedTransitionData = null, List<RequirementD> passedRequirements = null)
+        {
+            if (passedTransitionData != null)
             {
-                if(transitions.ContainsKey(TransitionBuilder[i].TransitionKey))
+                StartingState = passedStartingState;
+                //use passed data instead of data maybe in the editor
+                Debug.LogWarning($"Clearing FPMonoEvent Data and adding in passed data...");
+                TransitionBuilder.Clear();
+                //move passedTransitionData into TransitionBuilder as a new block of data not a reference
+                TransitionBuilder.AddRange(passedTransitionData);
+                //find all possible gameobject targets 
+                var targets = Resources.FindObjectsOfTypeAll<FP_SelectionBase>();
+                //var targets = GameObject.FindObjectsByType<FP_SelectionBase>(FindObjectsSortMode.None);
+                Debug.LogWarning($"Found some possible Selection Targets: {targets.Length}");
+                //build out UnityEvents now and inject them
+                for (int i = 0; i < TransitionBuilder.Count; i++)
+                {
+                    var curTransitionHelper = TransitionBuilder[i].HelperLogic;
+                    if (curTransitionHelper.UseHelper)
+                    {
+                        //find a match in my targets
+                        GameObject matchedWorldItem = null;
+                        for(int j = 0; j < targets.Length; j++)
+                        {
+                            var aPossibleMatch = targets[j].MainFPTag;
+                           
+                            if (aPossibleMatch == curTransitionHelper.TargetObjectData)
+                            {
+                                //MATCH
+                                matchedWorldItem = targets[j].gameObject;
+                                break;
+                            }
+                        }
+
+                        if (matchedWorldItem != null)
+                        {
+                            //unity event stored in the data passed
+                            //we have a match gameobject in the world and now need to build our event from this logic
+                            switch (curTransitionHelper.ActionType)
+                            {
+                                case FPEventActionType.NA:
+                                   
+                                    break;
+                                case FPEventActionType.SetActive:
+                                    curTransitionHelper.TheHelperAction.AddListener(
+                                        () => matchedWorldItem.SetActive(curTransitionHelper.BoolActionTypeState)
+                                        );
+                                    break;
+                                case FPEventActionType.ComponentActive:
+                                    //use custom string name for component look up
+                                    
+                                    var targetComponent = matchedWorldItem.GetComponent(curTransitionHelper.CustomString_NameAction) as Behaviour;
+                                    //if we find the target component
+                                    if (targetComponent)
+                                    {
+                                        curTransitionHelper.TheHelperAction.AddListener(
+                                            ()=> targetComponent.enabled = curTransitionHelper.BoolActionTypeState
+                                            );
+                                    }
+                                    else
+                                    {
+                                        Debug.LogWarning($"Component '{curTransitionHelper.CustomString_NameAction}' not found on '{matchedWorldItem.name}'.");
+                                    }
+                                    break;
+                                case FPEventActionType.PlayAnimationTrigger:
+                                    //find the animator!
+                                    Animator animator = matchedWorldItem.GetComponent<Animator>();
+                                    //we found one?
+                                    if (animator)
+                                    {
+                                        curTransitionHelper.TheHelperAction.AddListener(
+                                            () => animator.SetTrigger(curTransitionHelper.CustomString_NameAction)
+                                            );
+                                    }
+                                    else
+                                    {
+                                        Debug.LogWarning($"GameObject, {matchedWorldItem.name}, didn't have an animator on it for the animation named {curTransitionHelper.CustomString_NameAction}");
+                                    }
+                                        break;
+                                case FPEventActionType.CustomMethod:
+                                    break;
+                            }
+                        }
+                    }
+                }
+                
+            }
+            if (passedRequirements != null)
+            {
+                TheEventRequirements.Clear();
+                TheEventRequirements.AddRange(passedRequirements);
+            }
+            //setup rest of conditions
+            TransitionSetup();
+            EventStatesSetup();
+        }
+        /// <summary>
+        /// We have requirement updates we need to override
+        /// </summary>
+        /// <param name="passedStartingState"></param>
+        /// <param name="passedRequirements"></param>
+        public virtual void DataResolveAndActivate(SequenceStatus passedStartingState, List<RequirementD> passedRequirements)
+        {
+            if (passedRequirements != null)
+            {
+                TheEventRequirements.Clear();
+                TheEventRequirements.AddRange(passedRequirements);
+            }
+            DataResolveAndActivate(passedStartingState);
+        }
+        /// <summary>
+        /// Will setup the event with the monobehavior editor data and override the starting state you pass in
+        /// </summary>
+        /// <param name="passedStartingState"></param>
+        public virtual void DataResolveAndActivate(SequenceStatus passedStartingState)
+        {
+            StartingState = passedStartingState;
+            TransitionSetup();
+            EventStatesSetup();
+        }
+        
+        /// <summary>
+        /// Uses the transitionBuilder to generate our transitions and sets the helpers up from the data
+        /// </summary>
+        protected void TransitionSetup()
+        {
+            for (int i = 0; i < TransitionBuilder.Count; i++)
+            {
+                if (transitions.ContainsKey(TransitionBuilder[i].TransitionKey))
                 {
                     Debug.LogWarning("Transition already exists in the dictionary");
                     continue;
                 }
                 transitions.Add(TransitionBuilder[i].TransitionKey, TransitionBuilder[i].Outcome);
-                if(TransitionBuilder[i].HelperLogic.UseHelper && HelperManager != null)
+                if (TransitionBuilder[i].HelperLogic.UseHelper && HelperManager != null)
                 {
                     helpers.Add(TransitionBuilder[i].Outcome, TransitionBuilder[i].HelperLogic);
                 }
             }
         }
-        protected virtual void Start()
+        /// <summary>
+        /// This will add any additional Unity related references and/or events to the invoked actions
+        /// Establishes and adds the state data to the Event Manager and Initializes the event
+        /// </summary>
+        protected void EventStatesSetup()
         {
-            eventState = new FPEventState(StartingState,TheEventRequirements,transitions,this.gameObject);
-            TheEventManager.AddFPEventStateData(this,eventState);
+            eventState = new FPEventState(StartingState, TheEventRequirements, transitions, this.gameObject);
+            TheEventManager.AddFPEventStateData(this, eventState);
             eventState.Initialize();
             eventState.OnFinish += OnFinishMono;
             eventState.OnActive += OnActiveMono;
             eventState.OnLocked += OnLockedMono;
             eventState.OnUnlocked += OnUnlockedMono;
             eventStateEst = true;
-        }
-        protected virtual void Update()
-        {
-            if(!Testing)return;
-
-            if(Input.GetKeyDown(KeyCode.Space))
+            //process current state?
+            if (ProcessEventActionsOnSetup)
             {
-                TryForwardTransition();
-            }
-            if(Input.GetKeyDown(KeyCode.M))
-            {
-                TryTransition(TestTransition,TestRequirements);
-            }
-            curStateName = eventState.CurrentState.ToString();
-        }
-        #region Transition Method Calls
-        public virtual void TryTransition(SequenceTransition transition, List<RequirementD> requirementValue)
-        {
-            TheEventManager.TriggerEventTransition(this,transition,requirementValue);
-        }
-        public virtual void TryForwardTransition()
-        {
-            var TheState = eventState.CurrentState;
-            switch(TheState){
-                case SequenceStatus.Locked:
-                    //try to unlock
-                    TheEventManager.TriggerEventTransition(this,SequenceTransition.LockToUnlock);
-                    break;
-                case SequenceStatus.Unlocked:
-                    TheEventManager.TriggerEventTransition(this,SequenceTransition.UnlockToActive);
-                    break;
-                case SequenceStatus.Active:
-                    TheEventManager.TriggerEventTransition(this,SequenceTransition.ActiveToFinished);
-                    break;
+                TheEventManager.TriggerEventStateSetup(this);
             }
         }
-        public virtual void TryTransition(SequenceTransition transition)
-        {
-            switch(eventState.CurrentState)
-            {
-                case SequenceStatus.Locked:
-                    if(transition == SequenceTransition.LockToUnlock)
-                    {
-                        TheEventManager.TriggerEventTransition(this,transition);
-                    }
-                    break;
-                case SequenceStatus.Active:
-                    if(transition == SequenceTransition.ActiveToFinished)
-                    {
-                        TheEventManager.TriggerEventTransition(this,transition);
-                    }
-                    break;
-                case SequenceStatus.Unlocked:
-                    if(transition == SequenceTransition.UnlockToActive)
-                    {
-                         TheEventManager.TriggerEventTransition(this,transition);
-                        break;
-                    }
-                    if(transition == SequenceTransition.UnlockToLock)
-                    {
-                         TheEventManager.TriggerEventTransition(this,transition);
-                    }
-                    break;
-            }
-        }
+        
         #endregion
+        
         public void PassBackFromManager(bool success, SequenceStatus theStatus)
         {
             Debug.LogWarning($"Manager called back: {success} and {theStatus}");
@@ -207,30 +296,7 @@ namespace FuzzPhyte.SGraph
 
             UnityEditor.Handles.color = curColor;
             UnityEditor.Handles.ConeHandleCap(0, nextS - (forwardV * 0.25f), Quaternion.LookRotation(forwardV), 0.25f, EventType.Repaint);
-            
-            /*
-            for (int j = 0; j < TheEventRequirements.Count; j++)
-            {
-
-                if (TheEventRequirements[j].RequirementTag != null)
-                {
-                    if (ConnectedNodes[j] != null)
-                    {
-                        Vector3 nextS = ConnectedNodes[j].transform.position;
-                        //endPoints.Add(nextS);
-                        Vector3 startTan = new Vector3(centerP.x, centerP.y + 1 + (j * 2f), centerP.z);
-
-                        Vector3 forwardV = (nextS - startTan).normalized;
-                        Color fromColor = FP_UtilityData.ReturnColorByStatus(SharpData.StartState);
-                        UnityEditor.Handles.DrawBezier(centerP, nextS - (forwardV * 0.25f), startTan, nextS, fromColor, null, 2f);
-
-                        UnityEditor.Handles.color = fromColor;
-                        UnityEditor.Handles.DrawSolidDisc(nextS - (forwardV * 0.25f), forwardV, 0.25f);
-                    }
-
-                }
-            }
-            */
+     
 
 #endif
         }
