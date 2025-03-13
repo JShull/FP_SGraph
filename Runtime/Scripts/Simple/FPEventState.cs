@@ -61,15 +61,17 @@ namespace FuzzPhyte.SGraph
         {
             FPEventStateHelperSetup = false;
         }
-        public EventHelperData(float activationTime, Action activate)
+        public EventHelperData(float activationTime, Action activate, HelperAction helpAction=HelperAction.NA)
         {
             Category = HelperCategory.SequenceEvent;
+            HelperAction = helpAction;
             ActivationTime = activationTime;
             onActivate = activate;
         }
-        public EventHelperData(FPEventState eventState, float activationTime, Action activate)
+        public EventHelperData(FPEventState eventState, float activationTime, Action activate, HelperAction helpAction = HelperAction.NA)
         {
             Category = HelperCategory.SequenceEvent;
+            HelperAction = helpAction;
             ActivationTime = activationTime;
             onActivate = activate;
             EventState = eventState;

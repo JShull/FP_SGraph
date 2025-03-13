@@ -255,7 +255,7 @@ namespace FuzzPhyte.SGraph
                 // Only queue if the helper's last trigger time has exceeded the threshold or if it has never been triggered
                 if (!HelperManager.HasRecentlyTriggered(key, helperData.TimeUntil))
                 {
-                    HelperManager.StartTimer(helperData.TimeUntil, helperData.ActivateAction, helperData.HelperType, eventState,helperData.UniqueHelperName);
+                    HelperManager.StartTimer(helperData.TimeUntil, helperData.ActivateAction, helperData.HelperType, eventState,helperData.UniqueHelperName,helperData.HelperAction);
                 }
             }
             /*

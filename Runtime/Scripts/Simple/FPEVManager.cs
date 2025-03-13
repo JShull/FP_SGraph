@@ -21,7 +21,7 @@ namespace FuzzPhyte.SGraph
         public bool UseHelper;
         public string UniqueHelperName;
         public HelperCategory HelperType;
-        
+        public HelperAction HelperAction;
         public float TimeUntil;
         //Unique Tag
         public FP_Data TargetObjectData;

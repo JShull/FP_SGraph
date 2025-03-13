@@ -84,10 +84,11 @@ namespace FuzzPhyte.SGraph
             // If no entry exists, it means this helper has never been triggered, so return false
             return false;
         }
-        public void StartTimer(float time, Action onFinish,HelperCategory category,FPEventState gObject, string uniqueName="null")
+        public void StartTimer(float time, Action onFinish,HelperCategory category,FPEventState gObject, string uniqueName="null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time, onFinish);
             eventData.Category = category;
+            eventData.HelperAction = hAction;
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -96,10 +97,11 @@ namespace FuzzPhyte.SGraph
             helperTimers.Enqueue(eventData);
             runningHelperIndex++;
         }
-        public void StartTimer(float time, int param,Action<int>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
+        public void StartTimer(float time, int param,Action<int>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
+            eventData.HelperAction = hAction;
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -108,10 +110,11 @@ namespace FuzzPhyte.SGraph
             helperTimers.Enqueue(eventData);
             runningHelperIndex++;
         }
-        public void StartTimer(float time, float param,Action<float>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
+        public void StartTimer(float time, float param,Action<float>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
+            eventData.HelperAction = hAction;
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -120,10 +123,11 @@ namespace FuzzPhyte.SGraph
             helperTimers.Enqueue(eventData);
             runningHelperIndex++;
         }
-        public void StartTimer(float time, string param, Action<string>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
+        public void StartTimer(float time, string param, Action<string>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
+            eventData.HelperAction = hAction;
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -132,10 +136,11 @@ namespace FuzzPhyte.SGraph
             helperTimers.Enqueue(eventData);
             runningHelperIndex++;
         }
-        public void StartTimer(float time, FP_Data param, Action<FP_Data>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
+        public void StartTimer(float time, FP_Data param, Action<FP_Data>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
+            eventData.HelperAction = hAction;
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -144,10 +149,11 @@ namespace FuzzPhyte.SGraph
             helperTimers.Enqueue(eventData);
             runningHelperIndex++;
         }
-        public void StartTimer(float time, GameObject param, Action<GameObject>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null")
+        public void StartTimer(float time, GameObject param, Action<GameObject>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
             eventData.Category = category;
+            eventData.HelperAction = hAction;
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
