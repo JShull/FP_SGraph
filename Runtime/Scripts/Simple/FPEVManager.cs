@@ -1,4 +1,3 @@
-
 namespace FuzzPhyte.SGraph
 {
     using System.Collections.Generic;
@@ -51,14 +50,10 @@ namespace FuzzPhyte.SGraph
     #endregion
     public class FPEVManager : MonoBehaviour
     {
-        public Dictionary<FPMonoEvent,FPEventState> eventStates;
-
-        protected virtual void Awake()
-        {
-            eventStates = new Dictionary<FPMonoEvent, FPEventState>();
-        }
+        protected Dictionary<FPMonoEvent,FPEventState> eventStates = new Dictionary<FPMonoEvent, FPEventState>();
+        public Dictionary<FPMonoEvent, FPEventState> EventStates { get { return eventStates; } }
         #region Standard Event Functions
-        
+
         public virtual void AddFPEventStateData(FPMonoEvent theKey,FPEventState eventState)
         {
             if(eventStates.ContainsKey(theKey))
@@ -114,8 +109,7 @@ namespace FuzzPhyte.SGraph
             }
             var returnValues = eventStates[theEventKey].TryTransition(transition);
             theEventKey.PassBackFromManager(returnValues.Item1,returnValues.Item2);
-        }
-        
+        }    
         #endregion
     }
 }

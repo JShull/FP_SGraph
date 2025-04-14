@@ -1,11 +1,9 @@
 namespace FuzzPhyte.SGraph
 {   
     using System.Collections.Generic;
-    using System.Linq;
     using FuzzPhyte.Utility;
     using UnityEngine;
     using UnityEngine.Events;
-    using static UnityEngine.GraphicsBuffer;
 
     /// <summary>
     /// GameObject to build out an FPEventState
@@ -21,6 +19,12 @@ namespace FuzzPhyte.SGraph
         public SequenceStatus StartingState = SequenceStatus.Locked;
         public List<FPTransitionMapper> TransitionBuilder = new List<FPTransitionMapper>();
 
+        [Tooltip("If you wanted to listen in and subscribe to some events externally")]
+        public delegate void FPMonoEventDelegate(FPMonoEvent theEvent);
+        public event FPMonoEventDelegate OnFPMonoEventLocked;
+        public event FPMonoEventDelegate OnFPMonoEventUnlocked;
+        public event FPMonoEventDelegate OnFPMonoEventActivated;
+        public event FPMonoEventDelegate OnFPMonoEventFinished;
         
         [Space]
         [Header("Event Actions")]
@@ -217,32 +221,36 @@ namespace FuzzPhyte.SGraph
         
         #endregion
         
-        public void PassBackFromManager(bool success, SequenceStatus theStatus)
+        public virtual void PassBackFromManager(bool success, SequenceStatus theStatus)
         {
             Debug.LogWarning($"Manager called back: {success} and {theStatus}");
         }
-        public void OnActiveMono(StateMachineSB<RequirementD> theEventData)
+        public virtual void OnActiveMono(StateMachineSB<RequirementD> theEventData)
         {
             Debug.Log($"Event Active, the current state? {theEventData.CurrentState}");
             CheckRunHelper(theEventData);
+            OnFPMonoEventActivated?.Invoke(this);
             OnActiveEvent.Invoke();
         }
-        public void OnLockedMono(StateMachineSB<RequirementD> theEventData)
+        public virtual void OnLockedMono(StateMachineSB<RequirementD> theEventData)
         {
             Debug.Log($"Event Locked, the current state? {theEventData.CurrentState}");
             CheckRunHelper(theEventData);
+            OnFPMonoEventLocked?.Invoke(this);
             OnLockedEvent.Invoke();
         }
-        public void OnUnlockedMono(StateMachineSB<RequirementD> theEventData)
+        public virtual void OnUnlockedMono(StateMachineSB<RequirementD> theEventData)
         {
             Debug.Log($"Event Unlocked, the current state? {theEventData.CurrentState}");
             CheckRunHelper(theEventData);
+            OnFPMonoEventUnlocked?.Invoke(this);
             OnUnlockedEvent.Invoke();
         }
-        public void OnFinishMono(StateMachineSB<RequirementD> theEventData)  
+        public virtual void OnFinishMono(StateMachineSB<RequirementD> theEventData)  
         {
             Debug.Log($"Event Finished, the current state? {theEventData.CurrentState}");
             CheckRunHelper(theEventData);
+            OnFPMonoEventFinished?.Invoke(this);
             OnFinishEvent.Invoke();
         }
         protected virtual void CheckRunHelper(StateMachineSB<RequirementD> theEventData)
@@ -273,7 +281,7 @@ namespace FuzzPhyte.SGraph
             eventState.OnUnlocked -= OnUnlockedMono;
         }
 
-        private void OnDrawGizmosSelected()
+        protected virtual void OnDrawGizmosSelected()
         {
 #if UNITY_EDITOR
             if (TheEventManager==null)
@@ -303,7 +311,7 @@ namespace FuzzPhyte.SGraph
         /// <summary>
         /// Help with debugging sequences
         /// </summary>
-        private void OnDrawGizmos()
+        protected virtual void OnDrawGizmos()
         {
 #if UNITY_EDITOR
             if (TheEventManager == null)
