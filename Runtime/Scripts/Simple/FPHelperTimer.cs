@@ -8,14 +8,19 @@ namespace FuzzPhyte.SGraph
     {
         #region Helper Configuration
         [SerializeField]
-        private HelperThresholdConfig helperThresholdConfig;
-        private Dictionary<(HelperCategory, SequenceStatus), float> triggerThresholds;
-        private Dictionary<(HelperCategory, SequenceStatus), float> lastTriggeredTimes = new Dictionary<(HelperCategory, SequenceStatus), float>();
-        private Dictionary<string, EventHelperData> pastHelperEventData = new Dictionary<string, EventHelperData>();
+        protected HelperThresholdConfig helperThresholdConfig;
+        protected Dictionary<(HelperCategory, SequenceStatus), float> triggerThresholds;
+        protected Dictionary<(HelperCategory, SequenceStatus), float> lastTriggeredTimes = new Dictionary<(HelperCategory, SequenceStatus), float>();
+        protected Dictionary<string, EventHelperData> pastHelperEventData = new Dictionary<string, EventHelperData>();
         protected uint runningHelperIndex=0;
     #endregion
-        protected PriorityQueue<EventHelperData> helpers = new PriorityQueue<EventHelperData>();
+        //protected PriorityQueue<EventHelperData> helpers = new PriorityQueue<EventHelperData>();
         protected static FPHelperTimer _instance;
+        [Tooltip("If we want this GO to persist across scenes")]
+        public bool DontDestroy = false;
+        [Tooltip("If we want to set up the helper timer on awake")]
+        public bool SetupOnAwake = true;
+        protected bool isInitialized = false;
         public static FPHelperTimer HelperTimer { get { return _instance; } }
         public virtual void Awake()
         {
@@ -27,20 +32,41 @@ namespace FuzzPhyte.SGraph
             {
                 _instance = this;
             }
-            if (helperThresholdConfig != null)
+            if (SetupOnAwake)
             {
-                triggerThresholds = helperThresholdConfig.ToDictionary();
+                if (helperThresholdConfig != null)
+                {
+                    triggerThresholds = helperThresholdConfig.ToDictionary();
+                    isInitialized = true;
+                }
+                else
+                {
+                    Debug.LogError("No HelperThresholdConfig assigned to FPHelperTimer - you should assign one!");
+                    triggerThresholds = new Dictionary<(HelperCategory, SequenceStatus), float>();
+                    isInitialized = false;
+                }
             }
-            else
+            
+            if (DontDestroy)
             {
-                Debug.LogError("No HelperThresholdConfig assigned to FPHelperTimer - you should assign one!");
-                triggerThresholds = new Dictionary<(HelperCategory, SequenceStatus), float>();
+                DontDestroyOnLoad(gameObject);
             }
         }
         protected PriorityQueue<EventHelperData> helperTimers = new PriorityQueue<EventHelperData>();
         
+        public void ResetSetupHelperTimer(HelperThresholdConfig configurationFile)
+        {
+            helperTimers.ResetAndClear();
+            helperThresholdConfig = configurationFile;
+            triggerThresholds = helperThresholdConfig.ToDictionary();
+            isInitialized = true;
+        }
         protected virtual void Update()
         {
+            if (!isInitialized)
+            {
+                return;
+            }
             while (helperTimers.Count > 0 && helperTimers.Peek().ActivationTime <= Time.time)
             {
                 EventHelperData helperData = helperTimers.Dequeue();
