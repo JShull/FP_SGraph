@@ -245,6 +245,36 @@ namespace FuzzPhyte.SGraph
             }
             return (false,CurrentState);
         }
+        public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition, R requirementValue)
+        {
+            if (!UpdateUnlockCheckRequirement(requirementValue))
+            {
+                return (false, CurrentState);
+            }
+            //this logic is also in the other function
+            var transitionOutcome = InternalTransition(transition);
+            if (transitionOutcome.Item1)
+            {
+                //we successfully transitioned need to activate our Delegate events
+                switch (CurrentState)
+                {
+                    case SequenceStatus.Finished:
+                        FinishEvent();
+                        break;
+                    case SequenceStatus.Unlocked:
+                        UnlockEvent();
+                        break;
+                    case SequenceStatus.Locked:
+                        LockEvent();
+                        break;
+                    case SequenceStatus.Active:
+                        ActiveEvent();
+                        break;
+                }
+                return (true, CurrentState);
+            }
+            return (false, CurrentState);
+        }
         /// <summary>
         /// Internal Transition logic
         /// Responsible for checking the transitions
@@ -290,6 +320,8 @@ namespace FuzzPhyte.SGraph
         /// <param name="parameters"></param>
         /// <returns></returns>
         public abstract bool UpdateUnlockCheckRequirementsList(List<R> parameters);
+
+        public abstract bool UpdateUnlockCheckRequirement(R parameter);
         
     }
 }

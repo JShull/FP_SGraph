@@ -46,6 +46,34 @@ namespace FuzzPhyte.SGraph
             return false;
         }
 
+        public override bool UpdateUnlockCheckRequirement(RequirementD passedParameter)
+        {
+            if (unlockRequirements.Count == 0)
+            {
+                return true;
+            }
+            List<RequirementD> indexToRemove = new List<RequirementD>();
+            for (int i = 0; i < unlockRequirements.Count; i++)
+            {
+                var currentUnlockReq = unlockRequirements[i];
+                
+                if (passedParameter.RequirementMet && passedParameter.RequirementName == currentUnlockReq.RequirementName)
+                {
+                    indexToRemove.Add(currentUnlockReq);
+                }
+            }
+            for (int a = 0; a < indexToRemove.Count; a++)
+            {
+                var index = indexToRemove[a];
+                unlockRequirements.Remove(index);
+            }
+            if (unlockRequirements.Count == 0)
+            {
+                unlockRequirements.Clear();
+                return true;
+            }
+            return false;
+        }
         public virtual void Initialize()
         {
             // Initialize event-specific logic if needed

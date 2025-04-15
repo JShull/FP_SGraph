@@ -114,6 +114,15 @@ namespace FuzzPhyte.SGraph
             var returnValues = eventStates[theEventKey].TryTransition(transition, requirementValue);
             theEventKey.PassBackFromManager(returnValues.Item1,returnValues.Item2);
         }
+        public virtual void TriggerEventTransition(FPMonoEvent theEventKey,SequenceTransition transition,RequirementD requirementValue)
+        {
+            if (!eventStates.ContainsKey(theEventKey))
+            {
+                Debug.LogWarning("Key not found in the dictionary");
+                return;
+            }
+            var returnValues = eventStates[theEventKey].TryTransition(transition, requirementValue);
+        }
         public virtual void TriggerEventTransition(FPMonoEvent theEventKey, SequenceTransition transition)
         {
             if(!eventStates.ContainsKey(theEventKey))
