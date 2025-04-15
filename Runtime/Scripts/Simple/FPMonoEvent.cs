@@ -4,7 +4,7 @@ namespace FuzzPhyte.SGraph
     using FuzzPhyte.Utility;
     using UnityEngine;
     using UnityEngine.Events;
-
+    using System;
     /// <summary>
     /// GameObject to build out an FPEventState
     /// </summary>
@@ -33,7 +33,10 @@ namespace FuzzPhyte.SGraph
         public UnityEvent OnActiveEvent;
         public UnityEvent OnFinishEvent;
         protected Dictionary<SequenceTransition, SequenceStatus> transitions = new Dictionary<SequenceTransition, SequenceStatus>();
-        protected Dictionary<SequenceStatus,FPHelperMapper> helpers = new Dictionary<SequenceStatus, FPHelperMapper>();
+        protected Dictionary<SequenceStatus,List<FPHelperMapper>> helpers = new Dictionary<SequenceStatus, List<FPHelperMapper>>();
+        protected Dictionary<SequenceStatus,string> uniqueNames = new Dictionary<SequenceStatus, string>();
+        protected Dictionary<SequenceStatus,float> helpersTimer = new Dictionary<SequenceStatus, float>();
+        protected Dictionary<SequenceStatus,bool> useHelpers = new Dictionary<SequenceStatus, bool>();
         [Tooltip("If we want to use the helpers we need a timer")]
         public FPHelperTimer HelperManager;
         [SerializeField]
@@ -50,6 +53,42 @@ namespace FuzzPhyte.SGraph
         protected virtual void Start()
         {
         }
+        #region General Setup
+        /// <summary>
+        /// Call this first if we are setting this up from nothing.
+        /// </summary>
+        /// <param name="helperMGR"></param>
+        public virtual void SetupFromInstantiation(FPHelperTimer helperMGR,FPEVManager eventManager)
+        {
+            if (helperMGR == null) 
+            {
+                Debug.LogWarning($"No success on the helper you gave me, trying to see if one's in the scene...");
+                HelperManager = FPHelperTimer.HelperTimer;
+                if (HelperManager == null)
+                {
+                    Debug.LogWarning($"Wow really didn't find one, you should probably add one to the scene or something, but let me try one more thing...");
+                    GameObject helperObj = new GameObject("FPHelperManager");
+                    helperObj.transform.position = Vector3.zero;
+                    helperObj.AddComponent<FPHelperTimer>();
+                    helperObj.GetComponent<FPHelperTimer>().ResetSetupHelperTimer(null);
+                }
+            }
+            else
+            {
+                HelperManager = helperMGR;
+            }
+            if (eventManager == null)
+            {
+                Debug.LogError($"We really need this to be given to us because there could be different ones in the scene managing different things.");
+            }
+            else
+            {
+                TheEventManager = eventManager;
+            }
+               
+           
+        }
+        #endregion
         #region Event Setup Functions
         /// <summary>
         /// Process This First if we need to via external request
@@ -60,6 +99,10 @@ namespace FuzzPhyte.SGraph
         /// <param name="passedTransitionData"></param>
         public virtual void DataResolveAndActivate(SequenceStatus passedStartingState = SequenceStatus.Locked,List<FPTransitionMapper> passedTransitionData = null, List<RequirementD> passedRequirements = null)
         {
+            if(HelperManager == null)
+            {
+                Debug.LogWarning($"Missing a helper manager, do you need one? If you do, maybe try calling SetupFromInstantiation first?");
+            }
             if (passedTransitionData != null)
             {
                 StartingState = passedStartingState;
@@ -69,76 +112,63 @@ namespace FuzzPhyte.SGraph
                 //move passedTransitionData into TransitionBuilder as a new block of data not a reference
                 TransitionBuilder.AddRange(passedTransitionData);
                 //find all possible gameobject targets 
-                var targets = Resources.FindObjectsOfTypeAll<FP_SelectionBase>();
-                //var targets = GameObject.FindObjectsByType<FP_SelectionBase>(FindObjectsSortMode.None);
-                Debug.LogWarning($"Found some possible Selection Targets: {targets.Length}");
+                //var targets = Resources.FindObjectsOfTypeAll<FP_SelectionBase>();
                 //build out UnityEvents now and inject them
                 for (int i = 0; i < TransitionBuilder.Count; i++)
                 {
-                    var curTransitionHelper = TransitionBuilder[i].HelperLogic;
-                    if (curTransitionHelper.UseHelper)
+                    if (TransitionBuilder[i].UseHelper)
                     {
-                        //find a match in my targets
-                        GameObject matchedWorldItem = null;
-                        for(int j = 0; j < targets.Length; j++)
+                        for (int j = 0; j < TransitionBuilder[i].HelperLogic.Count; j++)
                         {
-                            var aPossibleMatch = targets[j].MainFPTag;
-                           
-                            if (aPossibleMatch == curTransitionHelper.TargetObjectData)
+                            var curTransitionHelper = TransitionBuilder[i].HelperLogic[j];
+                            GameObject matchedWorldItem = TheEventManager.ReturnFPSelectionBaseItem(curTransitionHelper.TargetObjectData);
+                            if (matchedWorldItem != null)
                             {
-                                //MATCH
-                                matchedWorldItem = targets[j].gameObject;
-                                break;
-                            }
-                        }
-
-                        if (matchedWorldItem != null)
-                        {
-                            //unity event stored in the data passed
-                            //we have a match gameobject in the world and now need to build our event from this logic
-                            switch (curTransitionHelper.ActionType)
-                            {
-                                case FPEventActionType.NA:
-                                   
-                                    break;
-                                case FPEventActionType.SetActive:
-                                    curTransitionHelper.TheHelperAction.AddListener(
-                                        () => matchedWorldItem.SetActive(curTransitionHelper.BoolActionTypeState)
-                                        );
-                                    break;
-                                case FPEventActionType.ComponentActive:
-                                    //use custom string name for component look up
-                                    
-                                    var targetComponent = matchedWorldItem.GetComponent(curTransitionHelper.CustomString_NameAction) as Behaviour;
-                                    //if we find the target component
-                                    if (targetComponent)
-                                    {
-                                        curTransitionHelper.TheHelperAction.AddListener(
-                                            ()=> targetComponent.enabled = curTransitionHelper.BoolActionTypeState
-                                            );
-                                    }
-                                    else
-                                    {
-                                        Debug.LogWarning($"Component '{curTransitionHelper.CustomString_NameAction}' not found on '{matchedWorldItem.name}'.");
-                                    }
-                                    break;
-                                case FPEventActionType.PlayAnimationTrigger:
-                                    //find the animator!
-                                    Animator animator = matchedWorldItem.GetComponent<Animator>();
-                                    //we found one?
-                                    if (animator)
-                                    {
-                                        curTransitionHelper.TheHelperAction.AddListener(
-                                            () => animator.SetTrigger(curTransitionHelper.CustomString_NameAction)
-                                            );
-                                    }
-                                    else
-                                    {
-                                        Debug.LogWarning($"GameObject, {matchedWorldItem.name}, didn't have an animator on it for the animation named {curTransitionHelper.CustomString_NameAction}");
-                                    }
+                                //unity event stored in the data passed
+                                //we have a match gameobject in the world and now need to build our event from this logic
+                                //we are adding onto a generic Unity Event that we have with nothing on it. We add various listeners to it as needed
+                                switch (curTransitionHelper.ActionType)
+                                {
+                                    case FPEventActionType.NA:
                                         break;
-                                case FPEventActionType.CustomMethod:
-                                    break;
+                                    case FPEventActionType.SetActive:
+                                        curTransitionHelper.TheHelperAction.AddListener(
+                                            () => matchedWorldItem.SetActive(curTransitionHelper.BoolActionTypeState)
+                                            );
+                                        break;
+                                    case FPEventActionType.ComponentActive:
+                                        //use custom string name for component look up
+                                        var targetComponent = matchedWorldItem.GetComponent(curTransitionHelper.CustomString_NameAction) as Behaviour;
+                                        //if we find the target component
+                                        if (targetComponent)
+                                        {
+                                            curTransitionHelper.TheHelperAction.AddListener(
+                                                () => targetComponent.enabled = curTransitionHelper.BoolActionTypeState
+                                                );
+                                        }
+                                        else
+                                        {
+                                            Debug.LogWarning($"Component '{curTransitionHelper.CustomString_NameAction}' not found on '{matchedWorldItem.name}'.");
+                                        }
+                                        break;
+                                    case FPEventActionType.PlayAnimationTrigger:
+                                        //find the animator!
+                                        Animator animator = matchedWorldItem.GetComponent<Animator>();
+                                        //we found one?
+                                        if (animator)
+                                        {
+                                            curTransitionHelper.TheHelperAction.AddListener(
+                                                () => animator.SetTrigger(curTransitionHelper.CustomString_NameAction)
+                                                );
+                                        }
+                                        else
+                                        {
+                                            Debug.LogWarning($"GameObject, {matchedWorldItem.name}, didn't have an animator on it for the animation named {curTransitionHelper.CustomString_NameAction}");
+                                        }
+                                        break;
+                                    case FPEventActionType.CustomMethod:
+                                        break;
+                                }
                             }
                         }
                     }
@@ -192,9 +222,20 @@ namespace FuzzPhyte.SGraph
                     continue;
                 }
                 transitions.Add(TransitionBuilder[i].TransitionKey, TransitionBuilder[i].Outcome);
-                if (TransitionBuilder[i].HelperLogic.UseHelper && HelperManager != null)
+                if(TransitionBuilder[i].UseHelper && HelperManager !=null)
                 {
-                    helpers.Add(TransitionBuilder[i].Outcome, TransitionBuilder[i].HelperLogic);
+                    //if we have a helper and it's not already in the dictionary
+                    if (!helpers.ContainsKey(TransitionBuilder[i].Outcome))
+                    {
+                        helpers.Add(TransitionBuilder[i].Outcome, TransitionBuilder[i].HelperLogic);
+                        helpersTimer.Add(TransitionBuilder[i].Outcome, TransitionBuilder[i].TimeUntil);
+                        uniqueNames.Add(TransitionBuilder[i].Outcome, TransitionBuilder[i].UniqueHelperName);
+                        useHelpers.Add(TransitionBuilder[i].Outcome, TransitionBuilder[i].UseHelper);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Helper for {TransitionBuilder[i].Outcome} already exists in the dictionary");
+                    }
                 }
             }
         }
@@ -256,15 +297,40 @@ namespace FuzzPhyte.SGraph
         protected virtual void CheckRunHelper(StateMachineSB<RequirementD> theEventData)
         {
             //
-            if (helpers.TryGetValue(theEventData.CurrentState, out FPHelperMapper helperData) && HelperManager != null)
+            if (helpers.TryGetValue(theEventData.CurrentState, out List<FPHelperMapper> helperData) && HelperManager != null)
             {
-                var key = (helperData.HelperType, theEventData.CurrentState);
+                //build out a single time event with a list of actions
+                //lets confirm we got a time
+                if (!helpersTimer.TryGetValue(theEventData.CurrentState, out float timeUntil))
+                {
+                    Debug.LogWarning($"No timer found for {theEventData.CurrentState}");
+                    return;
+                }
+                if(!uniqueNames.TryGetValue(theEventData.CurrentState, out string uniqueName))
+                {
+                    Debug.LogWarning($"No unique name found for {theEventData.CurrentState}");
+                    return;
+                }
+                //build action list for one singular timer
+                List<Action> newActions = new List<Action>();
+                List<HelperCategory> newCategories = new List<HelperCategory>();
+                List<HelperAction> newHelperActions = new List<HelperAction>();
+                for (int i=0; i < helperData.Count; i++)
+                {
+                    var curHelper = helperData[i];
+                    newActions.Add(curHelper.ActivateAction);
+                    newCategories.Add(curHelper.HelperType);
+                    newHelperActions.Add(curHelper.HelperAction);
+                }
+                var key = (helperData[0].HelperType, theEventData.CurrentState);
+                if (!HelperManager.HasRecentlyTriggered(key, timeUntil))
+                {
+                    HelperManager.StartTimer(timeUntil, newActions, newCategories, eventState, newHelperActions,uniqueName);
+                }
+                //var key = (helperData.HelperType, theEventData.CurrentState);
 
                 // Only queue if the helper's last trigger time has exceeded the threshold or if it has never been triggered
-                if (!HelperManager.HasRecentlyTriggered(key, helperData.TimeUntil))
-                {
-                    HelperManager.StartTimer(helperData.TimeUntil, helperData.ActivateAction, helperData.HelperType, eventState,helperData.UniqueHelperName,helperData.HelperAction);
-                }
+
             }
             /*
             if(helpers.ContainsKey(theEventData.CurrentState))
@@ -330,40 +396,49 @@ namespace FuzzPhyte.SGraph
             
             //sequencestatus
             string outcome = eventState.CurrentState.ToString();
-            if (helpers.ContainsKey(eventState.CurrentState))
+            /*
+            if (helpers.ContainsKey(eventState.CurrentState) && useHelpers.ContainsKey(eventState.CurrentState) && uniqueNames.ContainsKey(eventState.CurrentState))
             {
                 var helperMap = helpers[eventState.CurrentState];
-                if (helperMap.UseHelper)
+                var useHelper = useHelpers[eventState.CurrentState];
+                var uniqueName = uniqueNames[eventState.CurrentState];
+                if (useHelper)
                 {
-                    //figure out time left?
-                    //HelperManager.StartTimer
-                    outcome = eventState.CurrentState.ToString() + " " + helperMap.UniqueHelperName;
-                    var dataReturn = HelperManager.ContainTimerByUniqueName(helperMap.UniqueHelperName);
-                    Vector3 labelPos = this.transform.position + new Vector3(0, .2f, 0);
-                    if (dataReturn.Item2 != null)
+                    for(int i = 0; i < helperMap.Count; i++)
                     {
-                        var helperRunning = HelperManager.TimerActiveByUniqueName(helperMap.UniqueHelperName);
-                        if (helperRunning.Item1)
+                        var helperMapCurrent = helperMap[i];
+                        outcome = eventState.CurrentState.ToString() + " " + uniqueName + " Index " +i;
+                        var dataReturn = HelperManager.ContainTimerByUniqueName(uniqueName);
+                        Vector3 labelPos = this.transform.position + new Vector3(0, .2f, 0);
+                        if (dataReturn.Item2 != null)
                         {
-                            float runTimeLeft = helperRunning.Item2.ActivationTime - Time.time;
-                            UnityEditor.Handles.Label(labelPos, outcome + " " + (runTimeLeft).ToString("0.00"));
-                            if (runTimeLeft < 0)
+                            var helperRunning = HelperManager.TimerActiveByUniqueName(helperMap.UniqueHelperName);
+                            if (helperRunning.Item1)
                             {
-                                UnityEditor.Handles.Label(labelPos, outcome);
+                                float runTimeLeft = helperRunning.Item2.ActivationTime - Time.time;
+                                UnityEditor.Handles.Label(labelPos, outcome + " " + (runTimeLeft).ToString("0.00"));
+                                if (runTimeLeft < 0)
+                                {
+                                    UnityEditor.Handles.Label(labelPos, outcome);
+                                }
                             }
+                            else
+                            {
+                                UnityEditor.Handles.Label(labelPos, outcome + " " + (dataReturn.Item2.ActivationTime).ToString("0.00"));
+                            }
+
                         }
                         else
-                        { 
-                            UnityEditor.Handles.Label(labelPos, outcome + " " + (dataReturn.Item2.ActivationTime).ToString("0.00"));
+                        {
+                            UnityEditor.Handles.Label(labelPos, outcome);
                         }
-                        
                     }
-                    else
-                    {
-                        UnityEditor.Handles.Label(labelPos, outcome);
-                    }
+                    //figure out time left?
+                    //HelperManager.StartTimer
+                   
                 }
             }
+            */
             
 #endif
         }

@@ -14,15 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UniqueID: U0dyYXBoIFNhbXBsZSBEYXRhfEhlbHBlclRocmVzaG9sZHwxLDAuODA1MzU4MywwLjE2NTA5NDMsMQ==
   thresholds:
-  - Category: 13
-    State: 4
-    MaxDelay: 60
   - Category: 10
-    State: 4
-    MaxDelay: 120
-  - Category: 3
-    State: 4
-    MaxDelay: 15
-  - Category: 2
     State: 3
-    MaxDelay: 5
+    MaxDelay: 15
+  - Category: 10
+    State: 2
+    MaxDelay: 15

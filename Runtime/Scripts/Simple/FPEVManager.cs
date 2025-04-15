@@ -5,6 +5,8 @@ namespace FuzzPhyte.SGraph
     using FuzzPhyte.Utility;
     using System;
     using UnityEngine.Events;
+    using FuzzPhyte.Utility.Meta;
+    using System.Linq;
 
     #region Data Items
     [Serializable]
@@ -12,16 +14,19 @@ namespace FuzzPhyte.SGraph
     {
         public SequenceTransition TransitionKey;
         public SequenceStatus Outcome;
-        public FPHelperMapper HelperLogic;
+        //public FPHelperMapper HelperLogic;
+        [Space]
+        [Header("Helper Logic")]
+        public bool UseHelper;
+        public string UniqueHelperName;
+        public float TimeUntil;
+        public List<FPHelperMapper> HelperLogic;
     }
     [Serializable]
     public struct FPHelperMapper
     {
-        public bool UseHelper;
-        public string UniqueHelperName;
         public HelperCategory HelperType;
         public HelperAction HelperAction;
-        public float TimeUntil;
         //Unique Tag
         public FP_Data TargetObjectData;
         public FPEventActionType ActionType;
@@ -50,10 +55,19 @@ namespace FuzzPhyte.SGraph
     #endregion
     public class FPEVManager : MonoBehaviour
     {
+        public bool SetupResourcesOnAwake = false;
         protected Dictionary<FPMonoEvent,FPEventState> eventStates = new Dictionary<FPMonoEvent, FPEventState>();
         public Dictionary<FPMonoEvent, FPEventState> EventStates { get { return eventStates; } }
+        protected FP_SelectionBase[] sceneSelectionResources;
+        protected Dictionary<GameObject,FP_SelectionBase> sceneSelectionResourcesDict = new Dictionary<GameObject, FP_SelectionBase>();
         #region Standard Event Functions
-
+        public virtual void Awake()
+        {
+            if (SetupResourcesOnAwake)
+            {
+                BuildSceneResources();
+            }
+        }
         public virtual void AddFPEventStateData(FPMonoEvent theKey,FPEventState eventState)
         {
             if(eventStates.ContainsKey(theKey))
@@ -109,7 +123,50 @@ namespace FuzzPhyte.SGraph
             }
             var returnValues = eventStates[theEventKey].TryTransition(transition);
             theEventKey.PassBackFromManager(returnValues.Item1,returnValues.Item2);
-        }    
+        }
+
+        /// <summary>
+        /// This will look through the scene and find a various set of items by the FPSelectionBase component
+        /// Should call this at the beginning of an experience as well as anytime something is added to the scene that contains FP_SelectionBase
+        /// </summary>
+        public virtual void BuildSceneResources()
+        {
+            sceneSelectionResources = Resources.FindObjectsOfTypeAll<FP_SelectionBase>();
+            if(sceneSelectionResources.Length == 0)
+            {
+                Debug.LogWarning("No FP_SelectionBase objects found in the scene");
+                return;
+            }
+            foreach (var item in sceneSelectionResources)
+            {
+                if (!sceneSelectionResourcesDict.ContainsKey(item.gameObject))
+                {
+                    sceneSelectionResourcesDict.Add(item.gameObject, item);
+                }
+                else
+                {
+                    Debug.LogWarning($"Duplicate FP_SelectionBase object found in the scene: {item.name}, you should only have one FP_SelectionBase per gameobject");
+                }
+            }
+        }
+        /// <summary>
+        /// This will look through the scene and find a various set of items by the FPSelectionBase component
+        /// </summary>
+        /// <param name="tagToCheck"></param>
+        /// <returns></returns>
+        public virtual GameObject ReturnFPSelectionBaseItem(FP_Data tagToCheck)
+        {
+            var foundItem = sceneSelectionResourcesDict.FirstOrDefault(x => x.Value.MainFPTag == tagToCheck);
+            if (foundItem.Key != null)
+            {
+                return foundItem.Key;
+            }
+            else
+            {
+                Debug.LogWarning($"No FP_SelectionBase object found with the tag: {tagToCheck}");
+                return null;
+            }
+        }
         #endregion
     }
 }

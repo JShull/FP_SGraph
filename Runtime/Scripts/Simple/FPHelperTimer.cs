@@ -4,6 +4,7 @@ namespace FuzzPhyte.SGraph
     using FuzzPhyte.Utility;
     using UnityEngine;
     using System.Collections.Generic;
+
     public class FPHelperTimer : MonoBehaviour,IFPTimer<EventHelperData>
     {
         #region Helper Configuration
@@ -58,7 +59,16 @@ namespace FuzzPhyte.SGraph
         {
             helperTimers.ResetAndClear();
             helperThresholdConfig = configurationFile;
-            triggerThresholds = helperThresholdConfig.ToDictionary();
+            if (helperThresholdConfig != null)
+            {
+                triggerThresholds = helperThresholdConfig.ToDictionary();
+            }
+            else
+            {
+                Debug.LogError("No HelperThresholdConfig assigned to FPHelperTimer - you should assign one!");
+                triggerThresholds = new Dictionary<(HelperCategory, SequenceStatus), float>();
+            }
+
             isInitialized = true;
         }
         protected virtual void Update()
@@ -70,33 +80,45 @@ namespace FuzzPhyte.SGraph
             while (helperTimers.Count > 0 && helperTimers.Peek().ActivationTime <= Time.time)
             {
                 EventHelperData helperData = helperTimers.Dequeue();
-                var key = (helperData.Category, helperData.EventState.CurrentState);
-                //Smart Logic can Happen Here or when we call the StartTimer functions
-                //
-                // we can get our gameobject back from the FPEventState 
-                var gOthatStarted = helperData.EventState.UnityObject;
-                // Check if the state has changed
-                if (!helperData.IsHelperStateUnchanged())
+                if(helperData.Category.Count== helperData.onActivate.Count)
                 {
-                    Debug.LogWarning("Helper timer cancelled due to state change.");
-                    continue;
-                }
-                // Check time since last trigger for this category and state
-                // Determine the threshold for this helper's category and state
-                float maxDelay = triggerThresholds.ContainsKey(key) ? triggerThresholds[key] : helperData.ActivationTime;
+                    for (int i = 0; i < helperData.Category.Count; i++)
+                    {
+                        var key = (helperData.Category[i], helperData.EventState.CurrentState);
+                        //Smart Logic can Happen Here or when we call the StartTimer functions
+                        //
+                        // we can get our gameobject back from the FPEventState 
+                        var gOthatStarted = helperData.EventState.UnityObject;
+                        // Check if the state has changed
+                        if (!helperData.IsHelperStateUnchanged())
+                        {
+                            Debug.LogWarning("Helper timer cancelled due to state change.");
+                            continue;
+                        }
+                        // Check time since last trigger for this category and state
+                        // Determine the threshold for this helper's category and state
+                        float maxDelay = triggerThresholds.ContainsKey(key) ? triggerThresholds[key] : helperData.ActivationTime;
 
-                // Check if enough time has passed since the last trigger for this category and state
-                if (lastTriggeredTimes.TryGetValue(key, out float lastTime) && (Time.time - lastTime) < maxDelay)
-                {
-                    Debug.LogWarning("Helper not triggered: minimum time interval not met.");
-                    continue;
-                }
+                        // Check if enough time has passed since the last trigger for this category and state
+                        if (lastTriggeredTimes.TryGetValue(key, out float lastTime) && (Time.time - lastTime) < maxDelay)
+                        {
+                            Debug.LogWarning($"Helper not triggered: minimum time interval not met. |{Time.time-lastTime} < {maxDelay}| Last Time: {lastTime}");
+                            continue;
+                        }
 
-                // Update last triggered time and run the helper
-                lastTriggeredTimes[key] = Time.time;
-                Debug.LogWarning($"Helper Timer Finished with Action: {helperData.onActivate.Method.Name}");
-                // logic needed
-                helperData.onActivate();
+                        // Update last triggered time and run the helper
+                        lastTriggeredTimes[key] = Time.time;
+                        //get the current aligned action
+
+                        Debug.LogWarning($"Helper Timer Finished with Action: {helperData.onActivate[i].Method.Name}");
+                        // logic needed
+                        helperData.onActivate[i]();
+
+                    }
+                }
+                
+                //var keys = (helperData.Category, helperData.EventState.CurrentState);
+                
             }
         }
         public bool HasRecentlyTriggered((HelperCategory, SequenceStatus) key, float delay)
@@ -110,11 +132,11 @@ namespace FuzzPhyte.SGraph
             // If no entry exists, it means this helper has never been triggered, so return false
             return false;
         }
-        public void StartTimer(float time, Action onFinish,HelperCategory category,FPEventState gObject, string uniqueName="null", HelperAction hAction = HelperAction.NA)
+        public void StartTimer(float time, List<Action>onFinish,List<HelperCategory>categories,FPEventState gObject, List<HelperAction> helperActions, string uniqueName)
         {
             var eventData = StartTimer(time, onFinish);
-            eventData.Category = category;
-            eventData.HelperAction = hAction;
+            eventData.Category.AddRange(categories);
+            eventData.HelperAction.AddRange(helperActions);
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -123,24 +145,36 @@ namespace FuzzPhyte.SGraph
             helperTimers.Enqueue(eventData);
             runningHelperIndex++;
         }
-        public void StartTimer(float time, int param,Action<int>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
+        public void StartTimer(float time, Action onFinish,HelperCategory category,FPEventState gObject)
+        {
+            var eventData = StartTimer(time, onFinish);
+            eventData.Category.Add(category);
+            eventData.SetupEventState(gObject);
+            helperTimers.Enqueue(eventData);
+            runningHelperIndex++;
+        }
+
+        public void StartTimer(float time, List<Action>onFinish,List<HelperCategory>categories,FPEventState gObject)
+        {
+            var eventData = StartTimer(time, onFinish);
+            eventData.Category.AddRange(categories);
+            eventData.SetupEventState(gObject);
+        }
+        public void StartTimer(float time, int param,Action<int>onFinish,HelperCategory category,FPEventState gObject)
         {
             var eventData = StartTimer(time,param,onFinish);
-            eventData.Category = category;
-            eventData.HelperAction = hAction;
+            eventData.Category.Add(category);
+          
             eventData.SetupEventState(gObject);
-            if (uniqueName != "null")
-            {
-                pastHelperEventData.Add(uniqueName, eventData);
-            }
+            
             helperTimers.Enqueue(eventData);
             runningHelperIndex++;
         }
         public void StartTimer(float time, float param,Action<float>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
-            eventData.Category = category;
-            eventData.HelperAction = hAction;
+            eventData.Category.Add(category);
+            eventData.HelperAction.Add(hAction);
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -152,8 +186,8 @@ namespace FuzzPhyte.SGraph
         public void StartTimer(float time, string param, Action<string>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
-            eventData.Category = category;
-            eventData.HelperAction = hAction;
+            eventData.Category.Add(category);
+            eventData.HelperAction.Add(hAction);
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -165,8 +199,8 @@ namespace FuzzPhyte.SGraph
         public void StartTimer(float time, FP_Data param, Action<FP_Data>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
-            eventData.Category = category;
-            eventData.HelperAction = hAction;
+            eventData.Category.Add(category);
+            eventData.HelperAction.Add(hAction);
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -178,8 +212,8 @@ namespace FuzzPhyte.SGraph
         public void StartTimer(float time, GameObject param, Action<GameObject>onFinish,HelperCategory category,FPEventState gObject, string uniqueName = "null", HelperAction hAction = HelperAction.NA)
         {
             var eventData = StartTimer(time,param,onFinish);
-            eventData.Category = category;
-            eventData.HelperAction = hAction;
+            eventData.Category.Add(category);
+            eventData.HelperAction.Add(hAction);
             eventData.SetupEventState(gObject);
             if (uniqueName != "null")
             {
@@ -213,6 +247,10 @@ namespace FuzzPhyte.SGraph
         public EventHelperData StartTimer(float time, Action onFinish)
         {
             return  new EventHelperData(Time.time + time, onFinish);
+        }
+        public EventHelperData StartTimer(float time, List<Action> onFinish)
+        {
+            return new EventHelperData(Time.time + time, onFinish);
         }
         public EventHelperData StartTimer(float time, int param, Action<int> onFinish)
         {

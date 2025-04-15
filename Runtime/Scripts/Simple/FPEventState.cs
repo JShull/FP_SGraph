@@ -61,19 +61,47 @@ namespace FuzzPhyte.SGraph
         {
             FPEventStateHelperSetup = false;
         }
-        public EventHelperData(float activationTime, Action activate, HelperAction helpAction=HelperAction.NA)
+        public EventHelperData(float activationTime, List<Action> activatedActions,List<HelperAction> helpActions = null, List<HelperCategory> helpCategories = null)
         {
-            Category = HelperCategory.SequenceEvent;
-            HelperAction = helpAction;
             ActivationTime = activationTime;
-            onActivate = activate;
+            if (helpActions == null)
+            {
+                HelperAction = new List<HelperAction>();
+            }
+            else
+            {
+                HelperAction = helpActions;
+            }
+            if(helpCategories == null)
+            {
+                Category = new List<HelperCategory>();
+            }
+            else
+            {
+                Category = helpCategories;
+            }
+            onActivate = new List<Action>();
+            onActivate.AddRange(activatedActions);
         }
-        public EventHelperData(FPEventState eventState, float activationTime, Action activate, HelperAction helpAction = HelperAction.NA)
+        public EventHelperData(float activationTime, Action activate)
         {
-            Category = HelperCategory.SequenceEvent;
-            HelperAction = helpAction;
+            Category = new List<HelperCategory>();
+            Category.Add(HelperCategory.SequenceEvent);
+            HelperAction = new List<HelperAction>();
+            HelperAction.Add(Utility.HelperAction.NA);
             ActivationTime = activationTime;
-            onActivate = activate;
+            onActivate = new List<Action>();
+            onActivate.Add(activate);
+        }
+        public EventHelperData(FPEventState eventState, float activationTime, Action activate, HelperAction helpAction)
+        {
+            Category = new List<HelperCategory>();
+            Category.Add(HelperCategory.SequenceEvent);
+            HelperAction = new List<HelperAction>();
+            HelperAction.Add(Utility.HelperAction.NA);
+            ActivationTime = activationTime;
+            onActivate = new List<Action>();
+            onActivate.Add(activate);
             EventState = eventState;
             TheHelperState = eventState.CurrentState;
         }

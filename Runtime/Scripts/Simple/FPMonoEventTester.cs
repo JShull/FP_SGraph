@@ -10,6 +10,8 @@ namespace FuzzPhyte.SGraph
         public bool KeyBoardActiveTesting;
         public FPEVManager TheEventManager;
         protected FPMonoEvent eventRef;
+        public KeyCode TestForwardTransition = KeyCode.Space;
+        public KeyCode TestRequirementsTransition = KeyCode.M;
         [Header("Testing Purposes")]
         public List<RequirementD> TestRequirements = new List<RequirementD>();
         public SequenceTransition TestTransition;
@@ -21,11 +23,11 @@ namespace FuzzPhyte.SGraph
         public List<FPTransitionMapper> fakeTestData = new List<FPTransitionMapper>();
         public List<RequirementD> fakeRequirementData = new List<RequirementD>();
         public string CurrentStateName;
-        private void Awake()
+        protected virtual void Awake()
         {
             //need to wait for the FPEVManager to initialize states so we shouldn't run anything here...
         }
-        private void Start()
+        protected virtual void Start()
         {
             eventRef = this.GetComponent<FPMonoEvent>();
             if (TestFromData)
@@ -37,11 +39,11 @@ namespace FuzzPhyte.SGraph
         {
             if (!KeyBoardActiveTesting) return;
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(TestForwardTransition))
             {
                 TryForwardTransition();
             }
-            if (Input.GetKeyDown(KeyCode.M))
+            if (Input.GetKeyDown(TestRequirementsTransition))
             {
                 TryTransition(TestTransition, TestRequirements);
             }
