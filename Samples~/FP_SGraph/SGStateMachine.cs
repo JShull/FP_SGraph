@@ -72,5 +72,9 @@ namespace FuzzPhyte.SGraph.Samples
             return MeetsRequirements();
             
         }
+        public override bool UpdateUnlockCheckRequirement(RequirementD parameter)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
