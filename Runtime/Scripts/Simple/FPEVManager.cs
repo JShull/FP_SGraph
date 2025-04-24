@@ -8,7 +8,6 @@ namespace FuzzPhyte.SGraph
     using System.Linq;
     using FuzzPhyte.Utility.Attributes;
 
-
     #region Data Items
     [Serializable]
     public struct FPSingleEventData
@@ -16,8 +15,14 @@ namespace FuzzPhyte.SGraph
         [Tooltip("Something that can be used to identify the event")]
         [SerializeField, FPNest] string eventName;
         public SequenceStatus StartingEventState;
-        public List<RequirementD> RequirementData;
+        //public List<RequirementD> RequirementData;
         public List<FPTransitionMapper> TransitionMapperData;
+    }
+    [Serializable]
+    public struct FPSequenceStatusRequirements
+    {
+        public SequenceTransition Transition;
+        public List<RequirementD> RequirementData;
     }
     [Serializable]
     public struct FPTransitionMapper
@@ -25,6 +30,7 @@ namespace FuzzPhyte.SGraph
         [SerializeField,FPNest]string transitionName;
         [FPNest]public SequenceTransition TransitionKey;
         public SequenceStatus Outcome;
+        public List<RequirementD> RequirementData;
         [Space]
         [Header("Helper Logic")]
         public bool UseHelper;
@@ -123,7 +129,7 @@ namespace FuzzPhyte.SGraph
                 Debug.LogWarning("Key not found in the dictionary");
                 return;
             }
-            var returnValues = eventStates[theEventKey].TryTransition(transition, requirementValue);
+            var returnValues = eventStates[theEventKey].TryAnyTransition(transition, requirementValue);
             theEventKey.PassBackFromManager(returnValues.Item1,returnValues.Item2);
         }
         public virtual void TriggerEventTransition(FPMonoEvent theEventKey,SequenceTransition transition,RequirementD requirementValue)
@@ -133,7 +139,7 @@ namespace FuzzPhyte.SGraph
                 Debug.LogWarning("Key not found in the dictionary");
                 return;
             }
-            var returnValues = eventStates[theEventKey].TryTransition(transition, requirementValue);
+            var returnValues = eventStates[theEventKey].TryAnyTransition(transition, requirementValue);
         }
         public virtual void TriggerEventTransition(FPMonoEvent theEventKey, SequenceTransition transition)
         {

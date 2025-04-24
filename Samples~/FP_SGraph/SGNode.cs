@@ -2,7 +2,7 @@ namespace FuzzPhyte.SGraph.Samples
 {
     using FuzzPhyte.Utility;
     using System.Collections.Generic;
-
+    using System.Linq;
 //main sample class
     public class SGNode : NodeSB<TransitionD, RequirementD>
     {
@@ -30,21 +30,35 @@ namespace FuzzPhyte.SGraph.Samples
         {
             SGNodeID = id;
         }
-        public override void SetupNode(string id, List<RequirementD> requirements)
+        public override void SetupNode(string id, Dictionary<TransitionD,List<RequirementD>> requirements)
         {
             SGNodeID = id;
             SetupStateMachine(requirements);
         }
-        public override void SetupNode(string id, List<RequirementD> requirements, List<TransitionD> transitions)
+        public override void SetupNode(string id, Dictionary<TransitionD,List<RequirementD>> requirements, List<TransitionD> transitions)
         {
             SGNodeID = id;
             SetupStateMachine(requirements, transitions);
         }
-        public override void SetupStateMachine(List<RequirementD> Requirements)
+        public override void SetupStateMachine(Dictionary<TransitionD,List<RequirementD>> Requirements)
         {
-            SGStateMachine = new SGStateMachine(Requirements);
+            Dictionary<SequenceTransition,List<RequirementD>> newStateMachineRequirements = new Dictionary<SequenceTransition, List<RequirementD>>();
+            var requirementKeys = Requirements.Keys.ToList();
+            for (int i = 0; i < requirementKeys.Count; i++)
+            {
+                var curRequirementKey = requirementKeys[i];
+                var curRequirementList = Requirements[curRequirementKey];
+                if (!newStateMachineRequirements.ContainsKey(curRequirementKey.Transition))
+                {
+                    newStateMachineRequirements.Add(curRequirementKey.Transition, new List<RequirementD>());
+                }
+
+                newStateMachineRequirements[curRequirementKey.Transition].AddRange(curRequirementList);
+            }
+           
+            SGStateMachine = new SGStateMachine(newStateMachineRequirements);
         }
-        public override void SetupStateMachine(List<RequirementD> Requirements, List<TransitionD> Transitions)
+        public override void SetupStateMachine(Dictionary<TransitionD, List<RequirementD>> Requirements, List<TransitionD> Transitions)
         {
             Dictionary<SequenceTransition, SequenceStatus> newDictionary = new Dictionary<SequenceTransition, SequenceStatus>();
             for (int i = 0; i < Transitions.Count; i++)
@@ -52,7 +66,20 @@ namespace FuzzPhyte.SGraph.Samples
                 var curTransition = Transitions[i];
                 newDictionary.Add(curTransition.Transition, curTransition.OutcomeStatus);
             }
-            SGStateMachine = new SGStateMachine(startState, Requirements, newDictionary);
+            Dictionary<SequenceTransition, List<RequirementD>> newStateMachineRequirements = new Dictionary<SequenceTransition, List<RequirementD>>();
+            var requirementKeys = Requirements.Keys.ToList();
+            for (int i = 0; i < requirementKeys.Count; i++)
+            {
+                var curRequirementKey = requirementKeys[i];
+                var curRequirementList = Requirements[curRequirementKey];
+                if (!newStateMachineRequirements.ContainsKey(curRequirementKey.Transition))
+                {
+                    newStateMachineRequirements.Add(curRequirementKey.Transition, new List<RequirementD>());
+                }
+
+                newStateMachineRequirements[curRequirementKey.Transition].AddRange(curRequirementList);
+            }
+            SGStateMachine = new SGStateMachine(startState, newDictionary,newStateMachineRequirements);
         }
         public void BuildConnectionDictionaryList(List<SGNode>connections)
         {

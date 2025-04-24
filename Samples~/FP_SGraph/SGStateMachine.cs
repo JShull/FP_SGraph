@@ -1,35 +1,30 @@
-using FuzzPhyte.Utility;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-
 namespace FuzzPhyte.SGraph.Samples
 {
+    using FuzzPhyte.Utility;
+    using System;
+    using System.Collections.Generic;
+
     //Example of a state machine using RequirementD as the requirement type
     public class SGStateMachine : StateMachineSB<RequirementD>
     {
         #region Constructors
-        public SGStateMachine(List<RequirementD> requirements) : base(requirements)
-        {
-
-        }
+       
         public SGStateMachine(SequenceStatus startingState) : base(startingState)
         {
         }
 
-        public SGStateMachine(SequenceStatus startingState, List<RequirementD> requirements) : base(startingState, requirements)
+        public SGStateMachine(SequenceStatus startingState, Dictionary<SequenceTransition, SequenceStatus> transitions) : base(startingState, transitions)
         {
         }
-
-        public SGStateMachine(SequenceStatus startingState, List<RequirementD> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions) : base(startingState, requirements, transitions)
+        public SGStateMachine(Dictionary<SequenceTransition, List<RequirementD>> requirements):base(requirements)
+        { 
+        }
+        public SGStateMachine(Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<SequenceTransition, List<RequirementD>> requirements): base(transitions, requirements)
         {
         }
-
-        public SGStateMachine(SequenceStatus startingState, List<RequirementD> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<int, List<Action>> actions) : base(startingState, requirements, transitions, actions)
+        public SGStateMachine(SequenceStatus startingState,Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<SequenceTransition, List<RequirementD>> requirements) : base(startingState,transitions, requirements)
         {
         }
-
-
         #endregion
 
         /// <summary>
@@ -38,43 +33,55 @@ namespace FuzzPhyte.SGraph.Samples
         /// <param name="passedRequirements">ones to remove from unlockRequirements</param>
         /// <param name="useLockedState">are we using the state machine as a force/limit which if we pass true we want to make sure we aren't in a locked state</param>
         /// <returns></returns>
-        public override bool UpdateUnlockCheckRequirementsList(List<RequirementD> passedRequirementList)
+        public override bool UpdateTransitionCheckRequirementsList(SequenceTransition theTransition,List<RequirementD> passedRequirementList)
         {
             //comparative search to see if we have all of the requirements in the passedRequirementList list
-            if(unlockRequirements.Count == 0)
+            if(transitionRequirements.Count == 0)
             {
                 return true;
             }
-            List<RequirementD> requirementsToRemove = new List<RequirementD>();
-            for (int i = 0; i < unlockRequirements.Count; i++)
+            
+            //build out our list of requirements to remove
+            List<RequirementD> indexToRemove = new List<RequirementD>();
+            for (int i = 0; i < transitionRequirements[theTransition].Count; i++)
             {
-                //current unlock requirement
-                var curRequirement = unlockRequirements[i];
-
-                for(int j=0; j < passedRequirementList.Count; j++)
+                var currentUnlockReq = transitionRequirements[theTransition][i];
+                for (int j = 0; j < passedRequirementList.Count; j++)
                 {
-                    var curPassedRequirement = passedRequirementList[j];
-                    //do they match?
-                    if(curRequirement.RequirementName == curPassedRequirement.RequirementName)
+                    var passedParameterRequest = passedRequirementList[j];
+                    //string comparison
+                    var nameMatch = string.Equals(passedParameterRequest.RequirementName, currentUnlockReq.RequirementName, StringComparison.OrdinalIgnoreCase);
+                    if (passedParameterRequest.RequirementMet && nameMatch && (passedParameterRequest.RequirementTag == currentUnlockReq.RequirementTag))
                     {
-                        curRequirement.RequirementMet = true;
-                        requirementsToRemove.Add(curRequirement);
-                        break;
+                        indexToRemove.Add(currentUnlockReq);
                     }
                 }
             }
-            //remove them from the list - thus updating our actual system
-            for(int i = 0; i < requirementsToRemove.Count; i++)
+            //remove transition requirements based on the index built list
+            for (int a = 0; a < indexToRemove.Count; a++)
             {
-                RemoveUnlockRequirement(requirementsToRemove[i]);
+                var index = indexToRemove[a];
+                RemoveRequirementForTransition(theTransition, index);
+            }
+            if (transitionRequirements.ContainsKey(theTransition))
+            {
+                if (transitionRequirements[theTransition].Count > 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
             }
             //now actually recheck if we have any requirements left
-            return MeetsRequirements();
+           
             
         }
-        public override bool UpdateUnlockCheckRequirement(RequirementD parameter)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 }

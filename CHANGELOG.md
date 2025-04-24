@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-04-24
+
+### 0.4.0 Changed
+
+All sorts of major updates to the StateMachineSB.cs = this will have breaking changes on previous versions
+
+- [@JShull](https://github.com/jshull).
+  - StateMachineSB.cs
+    - Reworked entire requirements tied to no longer just unlock but all transitions
+  - FPEVManager.cs
+    - Added in RequirementData list for all FPTransitionMapper structs
+  - FPMonoEvent.cs
+    - Gutted this to align to major changes at the StateMachineSB level and the FPEVmanager level
+
 ## [0.3.0] - 2025-03-11
 
 ### 0.3.0 Added

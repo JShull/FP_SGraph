@@ -10,11 +10,18 @@ namespace FuzzPhyte.SGraph
         public bool KeyBoardActiveTesting;
         public FPEVManager TheEventManager;
         protected FPMonoEvent eventRef;
+        
+
         public KeyCode TestForwardTransition = KeyCode.Space;
-        public KeyCode TestRequirementsTransition = KeyCode.M;
+        [Space]
         [Header("Testing Purposes")]
-        public List<RequirementD> TestRequirements = new List<RequirementD>();
-        public SequenceTransition TestTransition;
+        public KeyCode TestRequirementsUnlockTransition = KeyCode.U;
+        public SequenceTransition TransitionToUnlockRequirements = SequenceTransition.LockToUnlock;
+        public List<RequirementD> TestUnlockRequirements = new List<RequirementD>();
+        [Space]
+        public KeyCode TestRequirementsFinishedTransition = KeyCode.F;
+        public SequenceTransition TransitionToFinishRequirements = SequenceTransition.ActiveToFinished;
+        public List<RequirementD> FinishRequirements = new List<RequirementD>();
 
         [Space]
         [Header("Build From Data Test")]
@@ -36,7 +43,10 @@ namespace FuzzPhyte.SGraph
             eventRef = this.GetComponent<FPMonoEvent>();
             if (TestFromData)
             {
-                eventRef.DataResolveAndActivate(FakeTestEventSO.ModuleEventData.StartingEventState, FakeTestEventSO.ModuleEventData.TransitionMapperData, FakeTestEventSO.ModuleEventData.RequirementData);
+                eventRef.DataResolveAndActivate(
+                    FakeTestEventSO.ModuleEventData.StartingEventState, 
+                    FakeTestEventSO.ModuleEventData.TransitionMapperData 
+                   );
             }
         }
         protected virtual void Update()
@@ -47,9 +57,13 @@ namespace FuzzPhyte.SGraph
             {
                 TryForwardTransition();
             }
-            if (Input.GetKeyDown(TestRequirementsTransition))
+            if (Input.GetKeyDown(TestRequirementsUnlockTransition))
             {
-                TryTransition(TestTransition, TestRequirements);
+                TryTransition(TransitionToUnlockRequirements, TestUnlockRequirements);
+            }
+            if (Input.GetKeyDown(TestRequirementsFinishedTransition))
+            {
+                TryTransition(TransitionToFinishRequirements, FinishRequirements);
             }
             CurrentStateName = eventRef.EventState.CurrentState.ToString();
         }

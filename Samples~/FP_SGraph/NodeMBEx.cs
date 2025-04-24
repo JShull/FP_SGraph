@@ -21,7 +21,6 @@ namespace FuzzPhyte.SGraph.Samples
         public override NodeSB<TransitionD, RequirementD> NodeSharp { get { return SharpData; } set { SharpData = (SGNode)value; } }
         public override NodeSOB<TransitionD, RequirementD> NodeDataTemplate { get => NodeDataGen; set { NodeDataGen = (NodeDataSOBEx)value; } }
         public override List<UNodeMB<TransitionD,RequirementD>> UnityOutConnections { get=>ConnectedNodes.Cast<UNodeMB<TransitionD,RequirementD>>().ToList(); set { ConnectedNodes = value.Cast<NodeMBEx>().ToList(); } }
-
         public override List<TransitionD> EventsByType { get => EventsByTransitions; set {EventsByTransitions=value;} }
 
         /// <summary>
@@ -51,7 +50,35 @@ namespace FuzzPhyte.SGraph.Samples
             //var curData = NodeDataTemplate as SOSGraphNodeDataEx;
             //var curNodeSharp = NodeSharp as SGNode;
             SharpData.StartState = NodeDataGen.StartingState;
-            SharpData.SetupStateMachine(reqList, transList);
+            Dictionary<TransitionD,List<RequirementD>> newRequirements = new Dictionary<TransitionD, List<RequirementD>>();
+            SequenceTransition myEstimatedTransition = SequenceTransition.NA;
+            switch (NodeDataGen.StartingState)
+            {
+                case SequenceStatus.None:
+                    myEstimatedTransition = SequenceTransition.NoneToUnlock;
+                    break;
+                case SequenceStatus.Locked:
+                    myEstimatedTransition = SequenceTransition.UnlockToLock;
+                    break;
+                case SequenceStatus.Unlocked:
+                   myEstimatedTransition = SequenceTransition.UnlockToActive;
+                    break;
+                case SequenceStatus.Active:
+                    myEstimatedTransition = SequenceTransition.ActiveToFinished;
+                    break;
+                case SequenceStatus.Finished:
+                    myEstimatedTransition = SequenceTransition.FinishedToLock;
+                    break;
+            }
+            TransitionD myTransition = new TransitionD()
+            {
+                Transition = myEstimatedTransition,
+                OutcomeStatus = NodeDataGen.StartingState,
+                UnityActionEvents = new List<UnityEvent>()
+            };
+            newRequirements.Add(myTransition, reqList);
+            //JOHN This probably isn't valid anymore
+            SharpData.SetupStateMachine(newRequirements, transList);
             //initialize the Connections Dictionary
             SharpData.BuildConnectionDictionaryList();
             //check our ScriptableObject data and our Connection data to make sure they are the same Count
