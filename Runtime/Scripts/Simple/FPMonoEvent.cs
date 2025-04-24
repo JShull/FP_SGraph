@@ -121,6 +121,7 @@ namespace FuzzPhyte.SGraph
                         for (int j = 0; j < TransitionBuilder[i].HelperLogic.Count; j++)
                         {
                             var curTransitionHelper = TransitionBuilder[i].HelperLogic[j];
+                            
                             GameObject matchedWorldItem = TheEventManager.ReturnFPSelectionBaseItem(curTransitionHelper.TargetObjectData);
                             if (matchedWorldItem != null)
                             {

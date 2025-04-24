@@ -3,7 +3,8 @@
     "rootNamespace": "FuzzPhyte.SGraph",
     "references": [
         "Unity.Mathematics",
-        "com.fuzzphyte.utility"
+        "com.fuzzphyte.utility",
+        "com.fuzzphyte.utility.attributes"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

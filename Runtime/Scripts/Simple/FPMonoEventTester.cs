@@ -1,7 +1,7 @@
 using FuzzPhyte.Utility;
 using System.Collections.Generic;
 using UnityEngine;
-
+using FuzzPhyte.Utility.Attributes;
 namespace FuzzPhyte.SGraph
 {
     [RequireComponent(typeof(FPMonoEvent))]
@@ -19,9 +19,13 @@ namespace FuzzPhyte.SGraph
         [Space]
         [Header("Build From Data Test")]
         public bool TestFromData = false;
-        public SequenceStatus StartingEventState = SequenceStatus.Locked;
-        public List<FPTransitionMapper> fakeTestData = new List<FPTransitionMapper>();
-        public List<RequirementD> fakeRequirementData = new List<RequirementD>();
+        //public SequenceStatus StartingEventState = SequenceStatus.Locked;
+        //public List<FPTransitionMapper> fakeTestData = new List<FPTransitionMapper>();
+        //public List<RequirementD> fakeRequirementData = new List<RequirementD>();
+        //new struct setup
+        public FPSimpleEventData FakeTestEventSO;
+        //[FPNest] public FPSingleEventData FakeTestEventData;
+        //
         public string CurrentStateName;
         protected virtual void Awake()
         {
@@ -32,7 +36,7 @@ namespace FuzzPhyte.SGraph
             eventRef = this.GetComponent<FPMonoEvent>();
             if (TestFromData)
             {
-                eventRef.DataResolveAndActivate(StartingEventState, fakeTestData, fakeRequirementData);
+                eventRef.DataResolveAndActivate(FakeTestEventSO.ModuleEventData.StartingEventState, FakeTestEventSO.ModuleEventData.TransitionMapperData, FakeTestEventSO.ModuleEventData.RequirementData);
             }
         }
         protected virtual void Update()

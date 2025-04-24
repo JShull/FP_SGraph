@@ -27,7 +27,9 @@ namespace FuzzPhyte.SGraph
                 for(int j = 0; j < passedParameters.Count; j++)
                 {
                     var passedParameterRequest = passedParameters[j];
-                    if(passedParameterRequest.RequirementMet && passedParameterRequest.RequirementName == currentUnlockReq.RequirementName)
+                    //string comparison
+                    var nameMatch = string.Equals(passedParameterRequest.RequirementName, currentUnlockReq.RequirementName, StringComparison.OrdinalIgnoreCase);
+                    if (passedParameterRequest.RequirementMet && nameMatch && (passedParameterRequest.RequirementTag == currentUnlockReq.RequirementTag))
                     {
                         indexToRemove.Add(currentUnlockReq);
                     }

@@ -555,37 +555,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TheEventManager: {fileID: 1289486708}
-  TheEventRequirements:
-  - RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
-    RequirementName: Journal Found
-    RequirementMet: 0
-  - RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
-    RequirementName: Journal Open
-    RequirementMet: 0
-  - RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
-    RequirementName: Journal Open
-    RequirementMet: 0
+  TheEventRequirements: []
   ProcessEventActionsOnSetup: 1
-  StartingState: 2
-  TransitionBuilder:
-  - TransitionKey: 4
-    Outcome: 3
-    UseHelper: 0
-    UniqueHelperName: 
-    TimeUntil: 0
-    HelperLogic: []
-  - TransitionKey: 5
-    Outcome: 4
-    UseHelper: 0
-    UniqueHelperName: 
-    TimeUntil: 0
-    HelperLogic: []
-  - TransitionKey: 6
-    Outcome: 5
-    UseHelper: 0
-    UniqueHelperName: 
-    TimeUntil: 0
-    HelperLogic: []
+  StartingState: 0
+  TransitionBuilder: []
   OnLockedEvent:
     m_PersistentCalls:
       m_Calls:
@@ -715,83 +688,15 @@ MonoBehaviour:
   TestForwardTransition: 32
   TestRequirementsTransition: 109
   TestRequirements:
-  - RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
-    RequirementName: Journal Found
+  - RequirementName: JFound
+    RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
     RequirementMet: 1
-  - RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
-    RequirementName: Journal Open
+  - RequirementName: JOpen
+    RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
     RequirementMet: 1
   TestTransition: 4
   TestFromData: 1
-  StartingEventState: 2
-  fakeTestData:
-  - TransitionKey: 4
-    Outcome: 3
-    UseHelper: 1
-    UniqueHelperName: Red Sample Event Enabled with VFX
-    TimeUntil: 20
-    HelperLogic:
-    - HelperType: 10
-      HelperAction: 0
-      TargetObjectData: {fileID: 11400000, guid: 01d713487a885184e965165a87dfe8c2, type: 2}
-      ActionType: 1
-      BoolActionTypeState: 1
-      CustomString_NameAction: 
-      TheHelperAction:
-        m_PersistentCalls:
-          m_Calls: []
-    - HelperType: 10
-      HelperAction: 0
-      TargetObjectData: {fileID: 11400000, guid: 01d713487a885184e965165a87dfe8c2, type: 2}
-      ActionType: 2
-      BoolActionTypeState: 1
-      CustomString_NameAction: SimpleComponentEx
-      TheHelperAction:
-        m_PersistentCalls:
-          m_Calls: []
-  - TransitionKey: 5
-    Outcome: 4
-    UseHelper: 1
-    UniqueHelperName: Blue Sample Event
-    TimeUntil: 10
-    HelperLogic:
-    - HelperType: 10
-      HelperAction: 0
-      TargetObjectData: {fileID: 11400000, guid: af46a488062aa344ea11e6ea168af551, type: 2}
-      ActionType: 1
-      BoolActionTypeState: 1
-      CustomString_NameAction: 
-      TheHelperAction:
-        m_PersistentCalls:
-          m_Calls: []
-  - TransitionKey: 6
-    Outcome: 5
-    UseHelper: 1
-    UniqueHelperName: Turn Red Off
-    TimeUntil: 5
-    HelperLogic:
-    - HelperType: 10
-      HelperAction: 0
-      TargetObjectData: {fileID: 11400000, guid: 01d713487a885184e965165a87dfe8c2, type: 2}
-      ActionType: 1
-      BoolActionTypeState: 0
-      CustomString_NameAction: 
-      TheHelperAction:
-        m_PersistentCalls:
-          m_Calls: []
-  - TransitionKey: 7
-    Outcome: 2
-    UseHelper: 0
-    UniqueHelperName: 
-    TimeUntil: 0
-    HelperLogic: []
-  fakeRequirementData:
-  - RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
-    RequirementName: Journal Found
-    RequirementMet: 0
-  - RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
-    RequirementName: Journal Open
-    RequirementMet: 0
+  FakeTestEventSO: {fileID: 11400000, guid: 77bd14fb222926b4cbccb5c626e3c2f5, type: 2}
   CurrentStateName: 
 --- !u!1 &917825029
 GameObject:
@@ -947,6 +852,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainFPTag: {fileID: 11400000, guid: af46a488062aa344ea11e6ea168af551, type: 2}
+  HelperTag: {fileID: 11400000, guid: b5f1f7443d97ed74ebff7694581b1203, type: 2}
 --- !u!1 &1074264912
 GameObject:
   m_ObjectHideFlags: 0
@@ -6212,6 +6118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainFPTag: {fileID: 11400000, guid: 01d713487a885184e965165a87dfe8c2, type: 2}
+  HelperTag: {fileID: 11400000, guid: 466bb04c831b5c742aa1da9fe940d03f, type: 2}
 --- !u!114 &1623722204
 MonoBehaviour:
   m_ObjectHideFlags: 0

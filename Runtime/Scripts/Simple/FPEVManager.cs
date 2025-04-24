@@ -5,16 +5,26 @@ namespace FuzzPhyte.SGraph
     using FuzzPhyte.Utility;
     using System;
     using UnityEngine.Events;
-    using FuzzPhyte.Utility.Meta;
     using System.Linq;
+    using FuzzPhyte.Utility.Attributes;
+
 
     #region Data Items
     [Serializable]
+    public struct FPSingleEventData
+    {
+        [Tooltip("Something that can be used to identify the event")]
+        [SerializeField, FPNest] string eventName;
+        public SequenceStatus StartingEventState;
+        public List<RequirementD> RequirementData;
+        public List<FPTransitionMapper> TransitionMapperData;
+    }
+    [Serializable]
     public struct FPTransitionMapper
     {
-        public SequenceTransition TransitionKey;
+        [SerializeField,FPNest]string transitionName;
+        [FPNest]public SequenceTransition TransitionKey;
         public SequenceStatus Outcome;
-        //public FPHelperMapper HelperLogic;
         [Space]
         [Header("Helper Logic")]
         public bool UseHelper;
@@ -25,10 +35,11 @@ namespace FuzzPhyte.SGraph
     [Serializable]
     public struct FPHelperMapper
     {
-        public HelperCategory HelperType;
+        public string HelperName;
+        [FPNest]public HelperCategory HelperType;
         public HelperAction HelperAction;
         //Unique Tag
-        public FP_Data TargetObjectData;
+        public FPHelperFindTag TargetObjectData;
         public FPEventActionType ActionType;
         [Tooltip("Used for state change on enabled/disabled items")]
         public bool BoolActionTypeState;
@@ -60,6 +71,7 @@ namespace FuzzPhyte.SGraph
         public Dictionary<FPMonoEvent, FPEventState> EventStates { get { return eventStates; } }
         protected FP_SelectionBase[] sceneSelectionResources;
         protected Dictionary<GameObject,FP_SelectionBase> sceneSelectionResourcesDict = new Dictionary<GameObject, FP_SelectionBase>();
+        
         #region Standard Event Functions
         public virtual void Awake()
         {
@@ -165,7 +177,7 @@ namespace FuzzPhyte.SGraph
         /// <returns></returns>
         public virtual GameObject ReturnFPSelectionBaseItem(FP_Data tagToCheck)
         {
-            var foundItem = sceneSelectionResourcesDict.FirstOrDefault(x => x.Value.MainFPTag == tagToCheck);
+            var foundItem = sceneSelectionResourcesDict.FirstOrDefault(x => x.Value.HelperTag == tagToCheck);
             if (foundItem.Key != null)
             {
                 return foundItem.Key;

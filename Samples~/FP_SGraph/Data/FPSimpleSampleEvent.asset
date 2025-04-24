@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 610dcb2d625ddab4fa1dad03961fa202, type: 3}
+  m_Name: FPSimpleSampleEvent
+  m_EditorClassIdentifier: 
+  UniqueID: Example Set Test 1 Sample Data
+  ModuleEventName: RED To Yellow to Blue
+  ModuleEventData:
+    eventName: Sample Test Event
+    StartingEventState: 2
+    RequirementData:
+    - RequirementName: JFound
+      RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
+      RequirementMet: 0
+    - RequirementName: JOpen
+      RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
+      RequirementMet: 0
+    TransitionMapperData:
+    - transitionName: To Lock
+      TransitionKey: 1
+      Outcome: 2
+      UseHelper: 1
+      UniqueHelperName: Find Red Boy
+      TimeUntil: 10
+      HelperLogic:
+      - HelperName: Find Red Boy Active
+        HelperType: 10
+        HelperAction: 0
+        TargetObjectData: {fileID: 11400000, guid: 466bb04c831b5c742aa1da9fe940d03f, type: 2}
+        ActionType: 1
+        BoolActionTypeState: 1
+        CustomString_NameAction: 
+        TheHelperAction:
+          m_PersistentCalls:
+            m_Calls: []
+      - HelperName: Find Red Boy VFX
+        HelperType: 10
+        HelperAction: 0
+        TargetObjectData: {fileID: 11400000, guid: 466bb04c831b5c742aa1da9fe940d03f, type: 2}
+        ActionType: 9
+        BoolActionTypeState: 0
+        CustomString_NameAction: SimpleComponentEx
+        TheHelperAction:
+          m_PersistentCalls:
+            m_Calls: []
+    - transitionName: Unlock
+      TransitionKey: 4
+      Outcome: 3
+      UseHelper: 1
+      UniqueHelperName: Find Blue Boy
+      TimeUntil: 5
+      HelperLogic:
+      - HelperName: Turn Blue Active
+        HelperType: 10
+        HelperAction: 0
+        TargetObjectData: {fileID: 11400000, guid: b5f1f7443d97ed74ebff7694581b1203, type: 2}
+        ActionType: 1
+        BoolActionTypeState: 1
+        CustomString_NameAction: 
+        TheHelperAction:
+          m_PersistentCalls:
+            m_Calls: []
+    - transitionName: To Active
+      TransitionKey: 5
+      Outcome: 4
+      UseHelper: 1
+      UniqueHelperName: Deactivate Red Boy
+      TimeUntil: 3
+      HelperLogic:
+      - HelperName: Find Red Boy - deactivate
+        HelperType: 10
+        HelperAction: 0
+        TargetObjectData: {fileID: 11400000, guid: 466bb04c831b5c742aa1da9fe940d03f, type: 2}
+        ActionType: 1
+        BoolActionTypeState: 0
+        CustomString_NameAction: 
+        TheHelperAction:
+          m_PersistentCalls:
+            m_Calls: []
+    - transitionName: To Finished
+      TransitionKey: 6
+      Outcome: 5
+      UseHelper: 1
+      UniqueHelperName: Remove Other Items
+      TimeUntil: 4
+      HelperLogic:
+      - HelperName: Find Red Boy - Deactivate
+        HelperType: 10
+        HelperAction: 0
+        TargetObjectData: {fileID: 11400000, guid: 466bb04c831b5c742aa1da9fe940d03f, type: 2}
+        ActionType: 1
+        BoolActionTypeState: 0
+        CustomString_NameAction: 
+        TheHelperAction:
+          m_PersistentCalls:
+            m_Calls: []
+      - HelperName: Find Blue Boy - Deactivate
+        HelperType: 10
+        HelperAction: 0
+        TargetObjectData: {fileID: 11400000, guid: b5f1f7443d97ed74ebff7694581b1203, type: 2}
+        ActionType: 1
+        BoolActionTypeState: 0
+        CustomString_NameAction: SimpleComponentEx
+        TheHelperAction:
+          m_PersistentCalls:
+            m_Calls: []
