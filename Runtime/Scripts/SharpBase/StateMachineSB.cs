@@ -3,6 +3,8 @@ namespace FuzzPhyte.SGraph
     using System.Collections.Generic;
     using FuzzPhyte.Utility;
     using System;
+    using System.Linq;
+
     //using System.Diagnostics;
 
     /// <summary>
@@ -12,8 +14,8 @@ namespace FuzzPhyte.SGraph
     public abstract class StateMachineSB<R> where R : struct
     {
         public SequenceStatus CurrentState { get; protected set; }
-        protected List<R> unlockRequirements;
         protected Dictionary<SequenceTransition, SequenceStatus> stateTransitions;
+        protected Dictionary<SequenceTransition, List<R>> transitionRequirements;
         protected Dictionary<int,List<Action>> stateActions;
         public delegate void StateEventHandler(StateMachineSB<R>sEvent);
         public event StateEventHandler OnFinish;
@@ -23,41 +25,64 @@ namespace FuzzPhyte.SGraph
         protected bool runInitialStateSequence;
 
         #region Constructors
-        public StateMachineSB(List<R>requirements)
+        public StateMachineSB()
         {
             CurrentState = SequenceStatus.Locked;
-            unlockRequirements = requirements;
+            //unlockRequirements = requirements;
             stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
             stateActions = new Dictionary<int, List<Action>>();
+            transitionRequirements = new Dictionary<SequenceTransition, List<R>>();
         }
-       
+
         protected StateMachineSB(SequenceStatus startingState)
         {
             CurrentState = startingState;
-            unlockRequirements = new List<R>();
             stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
             stateActions = new Dictionary<int, List<Action>>();
+            transitionRequirements = new Dictionary<SequenceTransition, List<R>>();
+
         }
-        protected StateMachineSB(SequenceStatus startingState, List<R> requirements)
+        protected StateMachineSB(SequenceStatus startingState, Dictionary<SequenceTransition, SequenceStatus> transitions)
         {
             CurrentState = startingState;
-            unlockRequirements = requirements;
-            stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
-            stateActions = new Dictionary<int, List<Action>>();
-        }
-        protected StateMachineSB(SequenceStatus startingState, List<R> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions)
-        {
-            CurrentState = startingState;
-            unlockRequirements = requirements;
             stateTransitions = transitions;
             stateActions = new Dictionary<int, List<Action>>();
+            transitionRequirements = new Dictionary<SequenceTransition, List<R>>();
         }
-        protected StateMachineSB(SequenceStatus startingState, List<R> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<int, List<Action>> actions)
+        protected StateMachineSB(SequenceStatus startingState, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<SequenceTransition, List<R>> additionalTransitionRequirements)
         {
             CurrentState = startingState;
-            unlockRequirements = requirements;
+            stateTransitions = transitions;
+            stateActions = new Dictionary<int, List<Action>>();
+            this.transitionRequirements = additionalTransitionRequirements;
+        }
+        protected StateMachineSB(SequenceStatus startingState, Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<int, List<Action>> actions)
+        {
+            CurrentState = startingState;
             stateTransitions = transitions;
             stateActions = actions;
+            transitionRequirements = new Dictionary<SequenceTransition, List<R>>();
+        }
+        protected StateMachineSB(SequenceStatus startingState, Dictionary<SequenceTransition,SequenceStatus> transitions,Dictionary<int,List<Action>> actions, Dictionary<SequenceTransition, List<R>> additionalTransitionRequirements)
+        {
+            CurrentState = startingState;
+            stateTransitions = transitions;
+            stateActions = actions;
+            this.transitionRequirements = additionalTransitionRequirements;
+        }
+        protected StateMachineSB(Dictionary<SequenceTransition, List<R>> additionalTransitionRequirements)
+        {
+            CurrentState = SequenceStatus.Locked;
+            stateTransitions = new Dictionary<SequenceTransition, SequenceStatus>();
+            stateActions = new Dictionary<int, List<Action>>();
+            this.transitionRequirements = additionalTransitionRequirements;
+        }
+        protected StateMachineSB(Dictionary<SequenceTransition, SequenceStatus> transitions, Dictionary<SequenceTransition, List<R>> additionalTransitionRequirements)
+        {
+            CurrentState = SequenceStatus.Locked;
+            stateTransitions = transitions;
+            stateActions = new Dictionary<int, List<Action>>();
+            this.transitionRequirements = additionalTransitionRequirements;
         }
         #endregion
         #region Decode/Code Unique Index by Transition and Outcome
@@ -73,20 +98,7 @@ namespace FuzzPhyte.SGraph
         }
         #endregion
         #region Update State Transitions and Requirements
-        public virtual void AddUnlockRequirement(R requirement)
-        {
-            if(!unlockRequirements.Contains(requirement))
-            {
-                unlockRequirements.Add(requirement);
-            }
-        }
-        public virtual void RemoveUnlockRequirement(R requirement)
-        {
-            if(unlockRequirements.Contains(requirement))
-            {
-                unlockRequirements.Remove(requirement);
-            }
-        }
+        
         public virtual void AddStateTransition(SequenceTransition transition, SequenceStatus newState)
         {
             if(!stateTransitions.ContainsKey(transition))
@@ -110,6 +122,7 @@ namespace FuzzPhyte.SGraph
             }
             stateActions[index].Add(action);
         }
+
         public virtual void RemoveStateAction(SequenceStatus state,SequenceTransition transition, Action action)
         {
             var index = ReturnUniqueIndexByTransitionAndOutcome(transition, state);
@@ -127,6 +140,58 @@ namespace FuzzPhyte.SGraph
                 }
             }
         }
+        #region Transition Requirements by Sequence Transitions
+        public virtual void AddRequirementsForTransition(SequenceTransition transition, List<R> requirements)
+        {
+            for(int i=0; i < requirements.Count; i++)
+            {
+                var curTransition = requirements[i];
+                AddRequirementForTransition(transition, curTransition);
+            }
+        }
+        public virtual void RemoveRequirementsForTransition(SequenceTransition transition, List<R> requirements)
+        {
+            for (int i = 0; i < requirements.Count; i++)
+            {
+                var curTransition = requirements[i];
+                RemoveRequirementForTransition(transition, curTransition);
+            }
+        }
+        /// <summary>
+        /// Adds a requirement for a transition
+        /// </summary>
+        /// <param name="transition"></param>
+        /// <param name="requirement"></param>
+        public virtual void AddRequirementForTransition(SequenceTransition transition, R requirement)
+        {
+            //check if we have a transition in our dictionary
+            if (!transitionRequirements.ContainsKey(transition))
+            {
+                transitionRequirements[transition] = new List<R>();
+            }
+            //check if we have a requirement in our list, if we, add a new one to it
+            if (!transitionRequirements[transition].Contains(requirement))
+            {
+                transitionRequirements[transition].Add(requirement);
+            }
+        }
+        /// <summary>
+        /// Removes a requirement for a transition
+        /// </summary>
+        /// <param name="transition"></param>
+        /// <param name="requirement"></param>
+        public virtual void RemoveRequirementForTransition(SequenceTransition transition, R requirement)
+        {
+            if (transitionRequirements.ContainsKey(transition))
+            {
+                transitionRequirements[transition].Remove(requirement);
+                if (transitionRequirements[transition].Count == 0)
+                {
+                    transitionRequirements.Remove(transition);
+                }
+            }
+        }
+        #endregion
         #endregion
         #region Delegate Events
         protected virtual void FinishEvent()
@@ -154,7 +219,6 @@ namespace FuzzPhyte.SGraph
         {
             if (!runInitialStateSequence)
             {
-
                 switch (CurrentState)
                 {
                     case SequenceStatus.Finished:
@@ -182,76 +246,38 @@ namespace FuzzPhyte.SGraph
         /// <param name="transition"></param>
         public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition)
         {
-            if(unlockRequirements.Count>0)
+            if(transitionRequirements.ContainsKey(transition))
             {
-                return (false,CurrentState);
-            }
-            var transitionOutcome= InternalTransition(transition);
-            if (transitionOutcome.Item1)
-            {
-                //we successfully transitioned need to activate our Delegate events
-                switch (CurrentState)
+                if (transitionRequirements[transition].Count > 0)
                 {
-                    case SequenceStatus.Finished:
-                        FinishEvent();
-                        break;
-                    case SequenceStatus.Unlocked:
-                        UnlockEvent();
-                        break;
-                    case SequenceStatus.Locked:
-                        LockEvent();
-                        break;
-                    case SequenceStatus.Active:
-                        ActiveEvent();
-                        break;
+                    return (false, CurrentState);
                 }
-                return (true, CurrentState);
             }
-            return (false,CurrentState);
+            return ProcessTransition(transition);
         }
-        /// <summary>
-        /// Public accessor to attempt at trying to transition the state
-        /// If we are successful this function will manage the firing of the delegate events
-        /// </summary>
-        /// <param name="transition"></param>
-        /// <returns></returns>
-        public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition, List<R> requirementValue)
+        public virtual (bool,SequenceStatus) TryAnyTransition(SequenceTransition transition,R requirementValue)
         {
-            if (!UpdateUnlockCheckRequirementsList(requirementValue))
-            {
-                return (false,CurrentState);
-            }
-            //this logic is also in the other function
-            var transitionOutcome= InternalTransition(transition);
-            if (transitionOutcome.Item1)
-            {
-                //we successfully transitioned need to activate our Delegate events
-                switch (CurrentState)
-                {
-                    case SequenceStatus.Finished:
-                        FinishEvent();
-                        break;
-                    case SequenceStatus.Unlocked:
-                        UnlockEvent();
-                        break;
-                    case SequenceStatus.Locked:
-                        LockEvent();
-                        break;
-                    case SequenceStatus.Active:
-                        ActiveEvent();
-                        break;
-                }
-                return (true, CurrentState);
-            }
-            return (false,CurrentState);
-        }
-        public virtual (bool,SequenceStatus) TryTransition(SequenceTransition transition, R requirementValue)
-        {
-            if (!UpdateUnlockCheckRequirement(requirementValue))
+            if (!UpdateTransitionCheckRequirementsList(transition, new List<R>() { requirementValue }))
             {
                 return (false, CurrentState);
             }
-            //this logic is also in the other function
+            return ProcessTransition(transition);
+        }
+        public virtual (bool, SequenceStatus) TryAnyTransition(SequenceTransition transition, List<R> requirementValues)
+        {
+            if (!UpdateTransitionCheckRequirementsList(transition, requirementValues))
+            {
+                return (false, CurrentState);
+            }
+            return ProcessTransition(transition);
+        }
+        /// <summary>
+        /// internal function to now process the transition by sequenceTransition
+        /// </summary>
+        /// <param name="transition"></param>
+        /// <returns></returns>
+        protected virtual (bool,SequenceStatus) ProcessTransition(SequenceTransition transition)
+        {
             var transitionOutcome = InternalTransition(transition);
             if (transitionOutcome.Item1)
             {
@@ -308,20 +334,19 @@ namespace FuzzPhyte.SGraph
         /// <returns></returns>
         public virtual bool MeetsRequirements()
         {
-            if (unlockRequirements.Count == 0)
+            var TransitionKeys = transitionRequirements.Keys.ToList();
+            for (int i = 0; i < TransitionKeys.Count; i++)
             {
-                return true;
+                var curTransition = transitionRequirements[TransitionKeys[i]];
+                if (curTransition.Count > 0)
+                {
+                    return false;
+                }
             }
-            return false;
+            
+            return true;
         }
-        /// <summary>
-        /// update the requirements list with passed parameters for unlocking
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public abstract bool UpdateUnlockCheckRequirementsList(List<R> parameters);
-
-        public abstract bool UpdateUnlockCheckRequirement(R parameter);
         
+        public abstract bool UpdateTransitionCheckRequirementsList(SequenceTransition transition, List<R> parameters);
     }
 }

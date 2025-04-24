@@ -8,11 +8,15 @@ namespace FuzzPhyte.SGraph
     {
         protected GameObject UnityRuntimeObject;
         public GameObject UnityObject { get { return UnityRuntimeObject; } }
-        public FPEventState(List<RequirementD> requirements) : base(requirements) {}
-        public FPEventState(SequenceStatus startingState, List<RequirementD> requirements, Dictionary<SequenceTransition, SequenceStatus> transitions, GameObject MonoOwner) : base(startingState,requirements, transitions) 
+        public FPEventState(SequenceStatus startingState,GameObject MonoOwner): base(startingState)
         {
             UnityRuntimeObject = MonoOwner;
         }
+        public FPEventState(SequenceStatus startingState, Dictionary<SequenceTransition,SequenceStatus>transitions,Dictionary<SequenceTransition,List<RequirementD>> additionalR, GameObject MonoOwner):base(startingState, transitions, additionalR)
+        {
+            UnityRuntimeObject = MonoOwner;
+        }
+        /*
         public override bool UpdateUnlockCheckRequirementsList(List<RequirementD> passedParameters)
         {
             if(unlockRequirements.Count == 0)
@@ -47,7 +51,7 @@ namespace FuzzPhyte.SGraph
             }
             return false;
         }
-
+        
         public override bool UpdateUnlockCheckRequirement(RequirementD passedParameter)
         {
             if (unlockRequirements.Count == 0)
@@ -75,6 +79,53 @@ namespace FuzzPhyte.SGraph
                 return true;
             }
             return false;
+        }
+        */
+        public override bool UpdateTransitionCheckRequirementsList(SequenceTransition transition, List<RequirementD> parameters)
+        {
+            
+            if(transitionRequirements.Count== 0)
+            {
+                return true;
+            }
+
+            //build out our list of requirements to remove
+            List<RequirementD> indexToRemove = new List<RequirementD>();
+            for (int i = 0; i < transitionRequirements[transition].Count; i++)
+            {
+                var currentUnlockReq = transitionRequirements[transition][i];
+                for(int j=0;j < parameters.Count; j++)
+                {
+                    var passedParameterRequest = parameters[j];
+                    //string comparison
+                    var nameMatch = string.Equals(passedParameterRequest.RequirementName, currentUnlockReq.RequirementName, StringComparison.OrdinalIgnoreCase);
+                    if (passedParameterRequest.RequirementMet && nameMatch && (passedParameterRequest.RequirementTag == currentUnlockReq.RequirementTag))
+                    {
+                        indexToRemove.Add(currentUnlockReq);
+                    }
+                }
+            }
+            //remove transition requirements based on the index built list
+            for (int a = 0; a < indexToRemove.Count; a++)
+            {
+                var index = indexToRemove[a];
+                RemoveRequirementForTransition(transition, index);
+            }
+            if (transitionRequirements.ContainsKey(transition))
+            {
+                if (transitionRequirements[transition].Count > 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
+            }
         }
         public virtual void Initialize()
         {

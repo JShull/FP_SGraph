@@ -17,17 +17,11 @@ MonoBehaviour:
   ModuleEventData:
     eventName: Sample Test Event
     StartingEventState: 2
-    RequirementData:
-    - RequirementName: JFound
-      RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
-      RequirementMet: 0
-    - RequirementName: JOpen
-      RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
-      RequirementMet: 0
     TransitionMapperData:
     - transitionName: To Lock
       TransitionKey: 1
       Outcome: 2
+      RequirementData: []
       UseHelper: 1
       UniqueHelperName: Find Red Boy
       TimeUntil: 10
@@ -55,6 +49,13 @@ MonoBehaviour:
     - transitionName: Unlock
       TransitionKey: 4
       Outcome: 3
+      RequirementData:
+      - RequirementName: JFound
+        RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
+        RequirementMet: 1
+      - RequirementName: JOpen
+        RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
+        RequirementMet: 1
       UseHelper: 1
       UniqueHelperName: Find Blue Boy
       TimeUntil: 5
@@ -72,6 +73,7 @@ MonoBehaviour:
     - transitionName: To Active
       TransitionKey: 5
       Outcome: 4
+      RequirementData: []
       UseHelper: 1
       UniqueHelperName: Deactivate Red Boy
       TimeUntil: 3
@@ -89,6 +91,10 @@ MonoBehaviour:
     - transitionName: To Finished
       TransitionKey: 6
       Outcome: 5
+      RequirementData:
+      - RequirementName: JClosed
+        RequirementTag: {fileID: 11400000, guid: e2dbeaa0d9a5ec340a4be76c67fab1cc, type: 2}
+        RequirementMet: 1
       UseHelper: 1
       UniqueHelperName: Remove Other Items
       TimeUntil: 4

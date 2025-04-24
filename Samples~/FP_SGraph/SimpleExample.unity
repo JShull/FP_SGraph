@@ -555,7 +555,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TheEventManager: {fileID: 1289486708}
-  TheEventRequirements: []
   ProcessEventActionsOnSetup: 1
   StartingState: 0
   TransitionBuilder: []
@@ -686,15 +685,21 @@ MonoBehaviour:
   KeyBoardActiveTesting: 1
   TheEventManager: {fileID: 1289486708}
   TestForwardTransition: 32
-  TestRequirementsTransition: 109
-  TestRequirements:
+  TestRequirementsUnlockTransition: 117
+  TransitionToUnlockRequirements: 4
+  TestUnlockRequirements:
   - RequirementName: JFound
     RequirementTag: {fileID: 11400000, guid: 9b310d44af0b2422ab2065349ce1ca00, type: 2}
     RequirementMet: 1
   - RequirementName: JOpen
     RequirementTag: {fileID: 11400000, guid: 904ba137e42414aa4ab4381dcda7f105, type: 2}
     RequirementMet: 1
-  TestTransition: 4
+  TestRequirementsFinishedTransition: 102
+  TransitionToFinishRequirements: 6
+  FinishRequirements:
+  - RequirementName: JClosed
+    RequirementTag: {fileID: 11400000, guid: e2dbeaa0d9a5ec340a4be76c67fab1cc, type: 2}
+    RequirementMet: 1
   TestFromData: 1
   FakeTestEventSO: {fileID: 11400000, guid: 77bd14fb222926b4cbccb5c626e3c2f5, type: 2}
   CurrentStateName: 

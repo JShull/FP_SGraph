@@ -11,7 +11,9 @@ namespace FuzzPhyte.SGraph
     public class FPMonoEvent : MonoBehaviour
     {
         public FPEVManager TheEventManager;
-        public List<RequirementD> TheEventRequirements = new List<RequirementD>();
+        //[Obsolete("Use other requirement struct")]
+        //public List<RequirementD> TheEventRequirements = new List<RequirementD>();
+        //public List<FPSequenceStatusRequirements> TheEventRequirementsData = new List<FPSequenceStatusRequirements>();
         [Tooltip("This will run the first event action tied to the starting state")]
         public bool ProcessEventActionsOnSetup;
         [Space]
@@ -85,11 +87,28 @@ namespace FuzzPhyte.SGraph
             {
                 TheEventManager = eventManager;
             }
-               
-           
         }
         #endregion
         #region Event Setup Functions
+        public virtual void DataResolveAndActivate(SequenceStatus passedStartingState = SequenceStatus.Locked,List<FPTransitionMapper> passedTransitionData = null)
+        {
+            if (HelperManager == null)
+            {
+                Debug.LogWarning($"Missing a helper manager, do you need one? If you do, maybe try calling SetupFromInstantiation first?");
+            }
+            if (passedTransitionData != null)
+            {
+                StartingState = passedStartingState;
+                //use passed data instead of data maybe in the editor
+                Debug.LogWarning($"Clearing FPMonoEvent Data and adding in passed data...");
+                BuildTransitions(passedTransitionData);
+            }
+            //build out event requirement data from transition data
+            //setup rest of conditions
+            TransitionSetup();
+            EventStatesSetup();
+        }
+
         /// <summary>
         /// Process This First if we need to via external request
         /// If you pass null in the transitionMapper it won't use any data you pass it
@@ -97,6 +116,7 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         /// <param name="passedStartingState">The starting state</param>
         /// <param name="passedTransitionData"></param>
+        [Obsolete]
         public virtual void DataResolveAndActivate(SequenceStatus passedStartingState = SequenceStatus.Locked,List<FPTransitionMapper> passedTransitionData = null, List<RequirementD> passedRequirements = null)
         {
             if(HelperManager == null)
@@ -108,97 +128,87 @@ namespace FuzzPhyte.SGraph
                 StartingState = passedStartingState;
                 //use passed data instead of data maybe in the editor
                 Debug.LogWarning($"Clearing FPMonoEvent Data and adding in passed data...");
-                TransitionBuilder.Clear();
-                //move passedTransitionData into TransitionBuilder as a new block of data not a reference
-                TransitionBuilder.AddRange(passedTransitionData);
-                //find all possible gameobject targets 
-                //var targets = Resources.FindObjectsOfTypeAll<FP_SelectionBase>();
-                //build out UnityEvents now and inject them
-                for (int i = 0; i < TransitionBuilder.Count; i++)
-                {
-                    if (TransitionBuilder[i].UseHelper)
-                    {
-                        for (int j = 0; j < TransitionBuilder[i].HelperLogic.Count; j++)
-                        {
-                            var curTransitionHelper = TransitionBuilder[i].HelperLogic[j];
-                            
-                            GameObject matchedWorldItem = TheEventManager.ReturnFPSelectionBaseItem(curTransitionHelper.TargetObjectData);
-                            if (matchedWorldItem != null)
-                            {
-                                //unity event stored in the data passed
-                                //we have a match gameobject in the world and now need to build our event from this logic
-                                //we are adding onto a generic Unity Event that we have with nothing on it. We add various listeners to it as needed
-                                switch (curTransitionHelper.ActionType)
-                                {
-                                    case FPEventActionType.NA:
-                                        break;
-                                    case FPEventActionType.SetActive:
-                                        curTransitionHelper.TheHelperAction.AddListener(
-                                            () => matchedWorldItem.SetActive(curTransitionHelper.BoolActionTypeState)
-                                            );
-                                        break;
-                                    case FPEventActionType.ComponentActive:
-                                        //use custom string name for component look up
-                                        var targetComponent = matchedWorldItem.GetComponent(curTransitionHelper.CustomString_NameAction) as Behaviour;
-                                        //if we find the target component
-                                        if (targetComponent)
-                                        {
-                                            curTransitionHelper.TheHelperAction.AddListener(
-                                                () => targetComponent.enabled = curTransitionHelper.BoolActionTypeState
-                                                );
-                                        }
-                                        else
-                                        {
-                                            Debug.LogWarning($"Component '{curTransitionHelper.CustomString_NameAction}' not found on '{matchedWorldItem.name}'.");
-                                        }
-                                        break;
-                                    case FPEventActionType.PlayAnimationTrigger:
-                                        //find the animator!
-                                        Animator animator = matchedWorldItem.GetComponent<Animator>();
-                                        //we found one?
-                                        if (animator)
-                                        {
-                                            curTransitionHelper.TheHelperAction.AddListener(
-                                                () => animator.SetTrigger(curTransitionHelper.CustomString_NameAction)
-                                                );
-                                        }
-                                        else
-                                        {
-                                            Debug.LogWarning($"GameObject, {matchedWorldItem.name}, didn't have an animator on it for the animation named {curTransitionHelper.CustomString_NameAction}");
-                                        }
-                                        break;
-                                    case FPEventActionType.CustomMethod:
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                }
-                
+                BuildTransitions(passedTransitionData);
             }
             if (passedRequirements != null)
             {
-                TheEventRequirements.Clear();
-                TheEventRequirements.AddRange(passedRequirements);
+                //TheEventRequirements.Clear();
+                //TheEventRequirements.AddRange(passedRequirements);
             }
             //setup rest of conditions
             TransitionSetup();
             EventStatesSetup();
         }
         /// <summary>
-        /// We have requirement updates we need to override
+        /// Build out the transitions and helpers from the passed data
         /// </summary>
-        /// <param name="passedStartingState"></param>
-        /// <param name="passedRequirements"></param>
-        public virtual void DataResolveAndActivate(SequenceStatus passedStartingState, List<RequirementD> passedRequirements)
+        /// <param name="passedTransitionData"></param>
+        protected virtual void BuildTransitions(List<FPTransitionMapper> passedTransitionData)
         {
-            if (passedRequirements != null)
+            TransitionBuilder.Clear();
+            TransitionBuilder.AddRange(passedTransitionData);
+            for (int i = 0; i < TransitionBuilder.Count; i++)
             {
-                TheEventRequirements.Clear();
-                TheEventRequirements.AddRange(passedRequirements);
+                if (TransitionBuilder[i].UseHelper)
+                {
+                    for (int j = 0; j < TransitionBuilder[i].HelperLogic.Count; j++)
+                    {
+                        var curTransitionHelper = TransitionBuilder[i].HelperLogic[j];
+
+                        GameObject matchedWorldItem = TheEventManager.ReturnFPSelectionBaseItem(curTransitionHelper.TargetObjectData);
+                        if (matchedWorldItem != null)
+                        {
+                            //unity event stored in the data passed
+                            //we have a match gameobject in the world and now need to build our event from this logic
+                            //we are adding onto a generic Unity Event that we have with nothing on it. We add various listeners to it as needed
+                            switch (curTransitionHelper.ActionType)
+                            {
+                                case FPEventActionType.NA:
+                                    break;
+                                case FPEventActionType.SetActive:
+                                    curTransitionHelper.TheHelperAction.AddListener(
+                                        () => matchedWorldItem.SetActive(curTransitionHelper.BoolActionTypeState)
+                                        );
+                                    break;
+                                case FPEventActionType.ComponentActive:
+                                    //use custom string name for component look up
+                                    var targetComponent = matchedWorldItem.GetComponent(curTransitionHelper.CustomString_NameAction) as Behaviour;
+                                    //if we find the target component
+                                    if (targetComponent)
+                                    {
+                                        curTransitionHelper.TheHelperAction.AddListener(
+                                            () => targetComponent.enabled = curTransitionHelper.BoolActionTypeState
+                                            );
+                                    }
+                                    else
+                                    {
+                                        Debug.LogWarning($"Component '{curTransitionHelper.CustomString_NameAction}' not found on '{matchedWorldItem.name}'.");
+                                    }
+                                    break;
+                                case FPEventActionType.PlayAnimationTrigger:
+                                    //find the animator!
+                                    Animator animator = matchedWorldItem.GetComponent<Animator>();
+                                    //we found one?
+                                    if (animator)
+                                    {
+                                        curTransitionHelper.TheHelperAction.AddListener(
+                                            () => animator.SetTrigger(curTransitionHelper.CustomString_NameAction)
+                                            );
+                                    }
+                                    else
+                                    {
+                                        Debug.LogWarning($"GameObject, {matchedWorldItem.name}, didn't have an animator on it for the animation named {curTransitionHelper.CustomString_NameAction}");
+                                    }
+                                    break;
+                                case FPEventActionType.CustomMethod:
+                                    break;
+                            }
+                        }
+                    }
+                }
             }
-            DataResolveAndActivate(passedStartingState);
         }
+        
         /// <summary>
         /// Will setup the event with the monobehavior editor data and override the starting state you pass in
         /// </summary>
@@ -246,7 +256,25 @@ namespace FuzzPhyte.SGraph
         /// </summary>
         protected void EventStatesSetup()
         {
-            eventState = new FPEventState(StartingState, TheEventRequirements, transitions, this.gameObject);
+            //build out dictionary from TransitionMapper:TransitionBuilder
+            Dictionary<SequenceTransition, List<RequirementD>> transitionRequirements = new Dictionary<SequenceTransition, List<RequirementD>>();
+            //transition mapper TransitionBuilder
+            for(int i = 0; i < TransitionBuilder.Count; i++)
+            {
+                var curTransitionMapper = TransitionBuilder[i];
+                //add the requirements to the list
+                if (!transitionRequirements.ContainsKey(curTransitionMapper.TransitionKey))
+                {
+                    transitionRequirements.Add(curTransitionMapper.TransitionKey, new List<RequirementD>());
+                }
+                for(int j = 0; j < curTransitionMapper.RequirementData.Count; j++)
+                {
+                    var curRequirement = curTransitionMapper.RequirementData[j];
+                    transitionRequirements[curTransitionMapper.TransitionKey].Add(curRequirement);
+                }
+            }
+            //eventState = new FPEventState(StartingState, TheEventRequirements, transitions, this.gameObject);
+            eventState = new FPEventState(StartingState, transitions, transitionRequirements, this.gameObject);
             TheEventManager.AddFPEventStateData(this, eventState);
             eventState.Initialize();
             eventState.OnFinish += OnFinishMono;
