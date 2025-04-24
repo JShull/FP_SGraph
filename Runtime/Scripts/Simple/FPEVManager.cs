@@ -15,7 +15,6 @@ namespace FuzzPhyte.SGraph
         [Tooltip("Something that can be used to identify the event")]
         [SerializeField, FPNest] string eventName;
         public SequenceStatus StartingEventState;
-        //public List<RequirementD> RequirementData;
         public List<FPTransitionMapper> TransitionMapperData;
     }
     [Serializable]
