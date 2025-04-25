@@ -18,25 +18,24 @@ namespace FuzzPhyte.SGraph
         public List<FPTransitionMapper> TransitionMapperData;
     }
     [Serializable]
-    public struct FPSequenceStatusRequirements
-    {
-        public SequenceTransition Transition;
-        public List<RequirementD> RequirementData;
-    }
-    [Serializable]
     public struct FPTransitionMapper
     {
-        [SerializeField,FPNest]string transitionName;
-        [FPNest]public SequenceTransition TransitionKey;
+        [SerializeField, FPNest] string transitionName;
+        [FPNest] public SequenceTransition TransitionKey;
         public SequenceStatus Outcome;
         public List<RequirementD> RequirementData;
-        [Space]
-        [Header("Helper Logic")]
         public bool UseHelper;
         public string UniqueHelperName;
         public float TimeUntil;
         public List<FPHelperMapper> HelperLogic;
     }
+    [Serializable]
+    public struct FPSequenceStatusRequirements
+    {
+        public SequenceTransition Transition;
+        public List<RequirementD> RequirementData;
+    }
+    
     [Serializable]
     public struct FPHelperMapper
     {

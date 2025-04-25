@@ -27,46 +27,39 @@
                 var element = transitionMapperList.serializedProperty.GetArrayElementAtIndex(index);
                 float lineHeight = EditorGUIUtility.singleLineHeight;
                 float spacing = EditorGUIUtility.standardVerticalSpacing;
-                float y = fullRect.y + 4;
-                float x = fullRect.x + 8;
-                float width = fullRect.width - 16;
 
-                // Draw visual box to contain everything
+                Rect drawRect = new Rect(fullRect.x + 8, fullRect.y + 4, fullRect.width - 16, lineHeight);
+
                 GUI.Box(fullRect, GUIContent.none);
 
-                // Start drawing fields inside box
-                EditorGUI.PropertyField(new Rect(x, y, width, lineHeight), element.FindPropertyRelative("transitionName"));
-                y += lineHeight + spacing;
+                EditorGUI.PropertyField(drawRect, element.FindPropertyRelative("transitionName"));
+                drawRect.y += lineHeight + spacing;
 
-                EditorGUI.PropertyField(new Rect(x, y, width, lineHeight), element.FindPropertyRelative("TransitionKey"));
-                y += lineHeight + spacing;
+                EditorGUI.PropertyField(drawRect, element.FindPropertyRelative("TransitionKey"));
+                drawRect.y += lineHeight + spacing;
 
-                EditorGUI.PropertyField(new Rect(x, y, width, lineHeight), element.FindPropertyRelative("Outcome"));
-                y += lineHeight + spacing;
+                EditorGUI.PropertyField(drawRect, element.FindPropertyRelative("Outcome"));
+                drawRect.y += lineHeight + spacing;
 
                 SerializedProperty req = element.FindPropertyRelative("RequirementData");
                 float reqHeight = EditorGUI.GetPropertyHeight(req, true);
-                EditorGUI.PropertyField(new Rect(x, y, width, reqHeight), req, new GUIContent("Requirement Data"), true);
-                y += reqHeight + spacing;
+                EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, reqHeight), req, new GUIContent("Requirement Data"), true);
+                drawRect.y += reqHeight + spacing;
 
-                SerializedProperty useHelper = element.FindPropertyRelative("UseHelper");
-                float helperHeight = EditorGUI.GetPropertyHeight(useHelper, true);
-                EditorGUI.PropertyField(new Rect(x, y, width, helperHeight), useHelper, new GUIContent("Helper Shit"),true);
-                y += helperHeight + spacing;
+                EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, lineHeight), element.FindPropertyRelative("UseHelper"));
+                drawRect.y += lineHeight + spacing;
 
-                if (useHelper.boolValue)
-                {
-                    EditorGUI.PropertyField(new Rect(x, y, width, lineHeight), element.FindPropertyRelative("UniqueHelperName"));
-                    y += lineHeight + spacing;
+                EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, lineHeight), element.FindPropertyRelative("UniqueHelperName"));
+                drawRect.y += lineHeight + spacing;
 
-                    EditorGUI.PropertyField(new Rect(x, y, width, lineHeight), element.FindPropertyRelative("TimeUntil"));
-                    y += lineHeight + spacing;
+                EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, lineHeight), element.FindPropertyRelative("TimeUntil"));
+                drawRect.y += lineHeight + spacing;
 
-                    SerializedProperty helperLogic = element.FindPropertyRelative("HelperLogic");
-                    float usehelperHeight = EditorGUI.GetPropertyHeight(helperLogic, true);
-                    EditorGUI.PropertyField(new Rect(x, y, width, usehelperHeight), helperLogic, new GUIContent("Helper Logic"), true);
-                }
+                SerializedProperty helperLogic = element.FindPropertyRelative("HelperLogic");
+                float helperHeight = EditorGUI.GetPropertyHeight(helperLogic, true);
+                EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, helperHeight), helperLogic, new GUIContent("Helper Logic"), true);
             };
+
 
 
             transitionMapperList.elementHeightCallback = (int index) =>
@@ -75,19 +68,22 @@
                 float line = EditorGUIUtility.singleLineHeight;
                 float spacing = EditorGUIUtility.standardVerticalSpacing;
 
-                float total = 0f;
-                total += line * 3 + spacing * 3; // Name, Key, Outcome
-                total += EditorGUI.GetPropertyHeight(element.FindPropertyRelative("RequirementData"), true) + spacing;
-                total += line + spacing; // UseHelper
+                float height = 0f;
 
-                if (element.FindPropertyRelative("UseHelper").boolValue)
-                {
-                    total += line * 2 + spacing * 2;
-                    total += EditorGUI.GetPropertyHeight(element.FindPropertyRelative("HelperLogic"), true) + spacing;
-                }
+                height += line + spacing; // transitionName
+                height += line + spacing; // TransitionKey
+                height += line + spacing; // Outcome
+                height += EditorGUI.GetPropertyHeight(element.FindPropertyRelative("RequirementData"), true) + spacing;
+                height += line + spacing; // UseHelper
+                height += line + spacing; // UniqueHelperName
+                height += line + spacing; // TimeUntil
+                height += EditorGUI.GetPropertyHeight(element.FindPropertyRelative("HelperLogic"), true) + spacing;
 
-                return total + 8; // padding inside the GUI.Box
+                return height + 6f; // safe buffer
             };
+
+
+
         }
 
         public override void OnInspectorGUI()
