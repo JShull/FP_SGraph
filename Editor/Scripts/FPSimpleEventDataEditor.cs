@@ -4,6 +4,7 @@
     using UnityEditorInternal;
     using UnityEngine;
     using FuzzPhyte.SGraph;
+    using FuzzPhyte.Utility.Editor;
     [CustomEditor(typeof(FPSimpleEventData))]
     public class FPSimpleEventDataEditor:Editor
     {
@@ -21,7 +22,7 @@
             {
                 EditorGUI.LabelField(rect, "Transition Mapper Data");
             };
-
+            //FP_Utility_Editor.DrawUILine(FP_Utility_Editor.OkayColor);
             transitionMapperList.drawElementCallback = (Rect fullRect, int index, bool isActive, bool isFocused) =>
             {
                 var element = transitionMapperList.serializedProperty.GetArrayElementAtIndex(index);
@@ -45,7 +46,8 @@
                 float reqHeight = EditorGUI.GetPropertyHeight(req, true);
                 EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, reqHeight), req, new GUIContent("Requirement Data"), true);
                 drawRect.y += reqHeight + spacing;
-
+                FP_Utility_Editor.DrawUILine(FP_Utility_Editor.WarningColor, drawRect);
+                drawRect.y += lineHeight + spacing;
                 EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, lineHeight), element.FindPropertyRelative("UseHelper"));
                 drawRect.y += lineHeight + spacing;
 
@@ -54,11 +56,13 @@
 
                 EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, lineHeight), element.FindPropertyRelative("TimeUntil"));
                 drawRect.y += lineHeight + spacing;
-
+                
                 SerializedProperty helperLogic = element.FindPropertyRelative("HelperLogic");
                 float helperHeight = EditorGUI.GetPropertyHeight(helperLogic, true);
                 EditorGUI.PropertyField(new Rect(drawRect.x, drawRect.y, drawRect.width, helperHeight), helperLogic, new GUIContent("Helper Logic"), true);
             };
+
+
 
 
 
@@ -73,10 +77,13 @@
                 height += line + spacing; // transitionName
                 height += line + spacing; // TransitionKey
                 height += line + spacing; // Outcome
+
                 height += EditorGUI.GetPropertyHeight(element.FindPropertyRelative("RequirementData"), true) + spacing;
+                height += line + spacing; //line draw
                 height += line + spacing; // UseHelper
                 height += line + spacing; // UniqueHelperName
                 height += line + spacing; // TimeUntil
+                
                 height += EditorGUI.GetPropertyHeight(element.FindPropertyRelative("HelperLogic"), true) + spacing;
 
                 return height + 6f; // safe buffer

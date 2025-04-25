@@ -17,4 +17,15 @@ MonoBehaviour:
   ModuleEventData:
     eventName: 
     StartingEventState: 1
-    TransitionMapperData: []
+    TransitionMapperData:
+    - transitionName: 
+      TransitionKey: 0
+      Outcome: 0
+      RequirementData:
+      - RequirementName: 
+        RequirementTag: {fileID: 0}
+        RequirementMet: 0
+      UseHelper: 0
+      UniqueHelperName: 
+      TimeUntil: 0
+      HelperLogic: []
