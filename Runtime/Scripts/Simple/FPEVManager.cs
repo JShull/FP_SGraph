@@ -15,8 +15,19 @@ namespace FuzzPhyte.SGraph
         [Tooltip("Something that can be used to identify the event")]
         [SerializeField, FPNest] string eventName;
         public SequenceStatus StartingEventState;
-        //public List<RequirementD> RequirementData;
         public List<FPTransitionMapper> TransitionMapperData;
+    }
+    [Serializable]
+    public struct FPTransitionMapper
+    {
+        [SerializeField, FPNest] string transitionName;
+        [FPNest] public SequenceTransition TransitionKey;
+        public SequenceStatus Outcome;
+        public List<RequirementD> RequirementData;
+        public bool UseHelper;
+        public string UniqueHelperName;
+        public float TimeUntil;
+        public List<FPHelperMapper> HelperLogic;
     }
     [Serializable]
     public struct FPSequenceStatusRequirements
@@ -24,20 +35,7 @@ namespace FuzzPhyte.SGraph
         public SequenceTransition Transition;
         public List<RequirementD> RequirementData;
     }
-    [Serializable]
-    public struct FPTransitionMapper
-    {
-        [SerializeField,FPNest]string transitionName;
-        [FPNest]public SequenceTransition TransitionKey;
-        public SequenceStatus Outcome;
-        public List<RequirementD> RequirementData;
-        [Space]
-        [Header("Helper Logic")]
-        public bool UseHelper;
-        public string UniqueHelperName;
-        public float TimeUntil;
-        public List<FPHelperMapper> HelperLogic;
-    }
+    
     [Serializable]
     public struct FPHelperMapper
     {
