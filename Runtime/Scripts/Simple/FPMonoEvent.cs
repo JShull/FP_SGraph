@@ -11,6 +11,8 @@ namespace FuzzPhyte.SGraph
     public class FPMonoEvent : MonoBehaviour
     {
         public FPEVManager TheEventManager;
+        [Tooltip("Can use this for matching/syncing with other components at a high level")]
+        public FP_Data TheMainEventTag;
         //[Obsolete("Use other requirement struct")]
         //public List<RequirementD> TheEventRequirements = new List<RequirementD>();
         //public List<FPSequenceStatusRequirements> TheEventRequirementsData = new List<FPSequenceStatusRequirements>();
