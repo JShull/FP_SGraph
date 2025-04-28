@@ -9,5 +9,6 @@ namespace FuzzPhyte.SGraph
     {
         [FPNest] public string ModuleEventName;
         public FPSingleEventData ModuleEventData;
+        public FP_Data SyncDataTag;
     }
 }
