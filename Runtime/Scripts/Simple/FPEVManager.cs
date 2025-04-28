@@ -75,7 +75,7 @@ namespace FuzzPhyte.SGraph
         public Dictionary<FPMonoEvent, FPEventState> EventStates { get { return eventStates; } }
         protected FP_SelectionBase[] sceneSelectionResources;
         protected Dictionary<GameObject,FP_SelectionBase> sceneSelectionResourcesDict = new Dictionary<GameObject, FP_SelectionBase>();
-        
+        public Dictionary<GameObject,FP_SelectionBase> SceneSelectionResources { get { return sceneSelectionResourcesDict; } }
         #region Standard Event Functions
         public virtual void Awake()
         {
