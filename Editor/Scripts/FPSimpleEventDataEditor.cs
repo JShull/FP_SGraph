@@ -103,7 +103,7 @@
             SerializedProperty moduleData = serializedObject.FindProperty("ModuleEventData");
             EditorGUILayout.PropertyField(moduleData.FindPropertyRelative("eventName"), new GUIContent("Event Name"));
             EditorGUILayout.PropertyField(moduleData.FindPropertyRelative("StartingEventState"));
-
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("SyncDataTag"));
             // Draw Transition Mapper List
             transitionMapperList.DoLayoutList();
 
