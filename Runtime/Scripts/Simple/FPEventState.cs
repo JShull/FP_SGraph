@@ -91,26 +91,30 @@ namespace FuzzPhyte.SGraph
 
             //build out our list of requirements to remove
             List<RequirementD> indexToRemove = new List<RequirementD>();
-            for (int i = 0; i < transitionRequirements[transition].Count; i++)
+            if (transitionRequirements.ContainsKey(transition)) 
             {
-                var currentUnlockReq = transitionRequirements[transition][i];
-                for(int j=0;j < parameters.Count; j++)
+                for (int i = 0; i < transitionRequirements[transition].Count; i++)
                 {
-                    var passedParameterRequest = parameters[j];
-                    //string comparison
-                    var nameMatch = string.Equals(passedParameterRequest.RequirementName, currentUnlockReq.RequirementName, StringComparison.OrdinalIgnoreCase);
-                    if (passedParameterRequest.RequirementMet && nameMatch && (passedParameterRequest.RequirementTag == currentUnlockReq.RequirementTag))
+                    var currentUnlockReq = transitionRequirements[transition][i];
+                    for (int j = 0; j < parameters.Count; j++)
                     {
-                        indexToRemove.Add(currentUnlockReq);
+                        var passedParameterRequest = parameters[j];
+                        //string comparison
+                        var nameMatch = string.Equals(passedParameterRequest.RequirementName, currentUnlockReq.RequirementName, StringComparison.OrdinalIgnoreCase);
+                        if (passedParameterRequest.RequirementMet && nameMatch && (passedParameterRequest.RequirementTag == currentUnlockReq.RequirementTag))
+                        {
+                            indexToRemove.Add(currentUnlockReq);
+                        }
                     }
                 }
+                //remove transition requirements based on the index built list
+                for (int a = 0; a < indexToRemove.Count; a++)
+                {
+                    var index = indexToRemove[a];
+                    RemoveRequirementForTransition(transition, index);
+                }
             }
-            //remove transition requirements based on the index built list
-            for (int a = 0; a < indexToRemove.Count; a++)
-            {
-                var index = indexToRemove[a];
-                RemoveRequirementForTransition(transition, index);
-            }
+            
             if (transitionRequirements.ContainsKey(transition))
             {
                 if (transitionRequirements[transition].Count > 0)
