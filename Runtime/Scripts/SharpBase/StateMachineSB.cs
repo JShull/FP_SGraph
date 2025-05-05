@@ -5,8 +5,6 @@ namespace FuzzPhyte.SGraph
     using System;
     using System.Linq;
 
-    //using System.Diagnostics;
-
     /// <summary>
     /// Abstract class for an 'Event' in the SGraph
     /// </summary>
