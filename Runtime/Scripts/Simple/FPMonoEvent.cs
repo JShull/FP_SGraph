@@ -372,10 +372,14 @@ namespace FuzzPhyte.SGraph
         }
         protected void OnDestroy()
         {
-            eventState.OnFinish -= OnFinishMono;
-            eventState.OnActive -= OnActiveMono;
-            eventState.OnLocked -= OnLockedMono;
-            eventState.OnUnlocked -= OnUnlockedMono;
+            if (eventState != null)
+            {
+                eventState.OnFinish -= OnFinishMono;
+                eventState.OnActive -= OnActiveMono;
+                eventState.OnLocked -= OnLockedMono;
+                eventState.OnUnlocked -= OnUnlockedMono;
+            }
+           
         }
 
         protected virtual void OnDrawGizmosSelected()
