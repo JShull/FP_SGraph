@@ -3,11 +3,7 @@ namespace FuzzPhyte.SGraph.Editor{
     using UnityEditor;
     using UnityEngine;
     using FuzzPhyte.SGraph.Samples;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using FuzzPhyte.SGraph.Editor;
-    using FuzzPhyte.Utility.Editor;
+   
     using SGUtility = FP_SGraphUtility<TransitionD, RequirementD>;
     [CustomEditor(typeof(SGraphWebManager))]
     public class SGraphWebManagerEditor : Editor

@@ -3,7 +3,6 @@
     "rootNamespace": "FuzzPhyte.SGraph.Samples",
     "references": [
         "com.fuzzphyte.sgraph",
-        "Unity.Serialization",
         "com.fuzzphyte.utility"
     ],
     "includePlatforms": [],

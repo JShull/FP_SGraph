@@ -2,7 +2,6 @@ namespace FuzzPhyte.SGraph.Editor
 {
     using UnityEngine;
     using UnityEditor;
-    using FuzzPhyte.SGraph;
     using FuzzPhyte.Utility.Editor;
     using FuzzPhyte.SGraph.Samples;
 
@@ -224,7 +223,8 @@ namespace FuzzPhyte.SGraph.Editor
                     nodeMonoScript.EventsByType.Add(transition);
                 }
                 nodeMonoScript.ConnectedNodes.Clear();
-                var foundObjects = GameObject.FindObjectsOfType<NodeMBEx>();
+                var foundObjects = Object.FindObjectsByType<NodeMBEx>(FindObjectsSortMode.InstanceID);
+                //var foundObjects = GameObject.FindObjectsOfType<NodeMBEx>();
                 for (int i=0;i<nodeMonoScript.NodeDataTemplate.Connections.Count; i++)
                 {
                     var curDataObject = nodeMonoScript.NodeDataTemplate.Connections[i];
