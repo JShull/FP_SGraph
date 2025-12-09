@@ -224,7 +224,6 @@ namespace FuzzPhyte.SGraph.Editor
                 }
                 nodeMonoScript.ConnectedNodes.Clear();
                 var foundObjects = Object.FindObjectsByType<NodeMBEx>(FindObjectsSortMode.InstanceID);
-                //var foundObjects = GameObject.FindObjectsOfType<NodeMBEx>();
                 for (int i=0;i<nodeMonoScript.NodeDataTemplate.Connections.Count; i++)
                 {
                     var curDataObject = nodeMonoScript.NodeDataTemplate.Connections[i];
